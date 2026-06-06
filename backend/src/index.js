@@ -10,6 +10,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import sequelize from './config/db.js';
+import cookieParser from 'cookie-parser';
+import 'dotenv/config'; 
 
 import authRoutes from './routes/auth.routes.js';
 
@@ -23,6 +25,7 @@ app.use(morgan('dev'));
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 /* ==========================================================================
    Configuración de Bases de Datos
@@ -41,13 +44,18 @@ redisClient.on('error', (err) => console.error('[Redis] Error de conexión:', er
 /* ==========================================================================
    Definición de Rutas
    ========================================================================== */
-app.use('/api/auth', authRoutes);
 /**
- * @route GET /api/health
+ * @route /api/v1/auth
+ * @desc Rutas relacionadas con autenticación y gestión de usuarios (registro, login, etc.)
+ * @access Público (Algunas rutas protegidas por token)
+ */
+   app.use('/api/v1/auth', authRoutes);
+/**
+ * @route GET /api/v1/health
  * @desc Verifica el estado de los servicios subyacentes (Base de datos y Caché).
  * @access Público
  */
-app.get('/api/health', async (req, res) => {
+app.get('/api/v1/health', async (req, res) => {
     try {
         // Uso de Sequelize para la consulta cruda de prueba
         const [rows] = await sequelize.query('SELECT 1 + 1 AS solution');
