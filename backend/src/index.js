@@ -11,7 +11,10 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import sequelize from './config/db.js';
 import cookieParser from 'cookie-parser';
+
 import 'dotenv/config'; 
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.js';
 
 import authRoutes from './routes/auth.routes.js';
 
@@ -80,18 +83,15 @@ app.get('/api/v1/health', async (req, res) => {
     }
 });
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.get('/api-docs.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+});
 /* ==========================================================================
    Inicialización del Servidor
    ========================================================================== */
-
-/**
- * Función autoejecutable para inicializar las conexiones de manera asíncrona
- * antes de abrir el puerto de escucha de Express.
- */
-/**
- * Función autoejecutable para inicializar las conexiones de manera asíncrona
- * antes de abrir el puerto de escucha de Express.
- */
 const startServer = async () => {
     try {
         await redisClient.connect();

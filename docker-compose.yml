@@ -8,11 +8,8 @@ services:
     image: mysql:8.0
     container_name: vacunapp_mysql
     restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_DATABASE}
-      MYSQL_DATABASE: ${MYSQL_USER}
-      MYSQL_USER: ${MYSQL_PASSWORD}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    env_file:
+      - ./backend/.env
     ports:
       - "3306:3306"
     volumes:
@@ -44,6 +41,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
+    env_file:
+      - ./backend/.env
     container_name: vacunapp_backend
     volumes:
       - ./backend:/usr/src/app
