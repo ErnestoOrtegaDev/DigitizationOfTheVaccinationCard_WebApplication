@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------
+  # 1. Base de Datos: MySQL 8.0
+  # ----------------------------------------
+  vacunapp-mysql:
+    image: mysql:8.0
+    container_name: vacunapp_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: vacunapp_db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: adminpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      # Persistencia de datos (evita que se borre la BD al apagar el contenedor)
+      - mysql_data:/var/lib/mysql
+      # Script de inicialización (se ejecuta solo la primera vez que se levanta)
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - vacunapp-network
+
+  # ----------------------------------------
+  # 2. Caché y Sesiones: Redis
+  # ----------------------------------------
+  vacunapp-redis:
+    image: redis:7-alpine
+    container_name: vacunapp_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - vacunapp-network
+
+  # ----------------------------------------
+  # 3. Backend: Node.js (Express)
+  # ----------------------------------------
+  vacunapp-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: vacunapp_backend
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules # Protege los modulos instalados dentro del contenedor
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - DB_HOST=vacunapp-mysql
+      - REDIS_HOST=vacunapp-redis
+    depends_on:
+      - vacunapp-mysql
+      - vacunapp-redis
+    networks:
+      - vacunapp-network
+
+  # ----------------------------------------
+  # 4. Frontend: React / Vite
+  # ----------------------------------------
+  vacunapp-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: vacunapp_frontend
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "5173:5173"
+    networks:
+      - vacunapp-network
+
+# Declaración de volúmenes persistentes y red interna
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  vacunapp-network:
+    driver: bridge
