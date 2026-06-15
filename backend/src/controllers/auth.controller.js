@@ -48,12 +48,12 @@ export const login = async (req, res) => {
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
-            return res.status(401).json({ status: 'error', message: 'Credenciales inválidas' });
+            return res.status(401).json({ status: 'error', message: 'Usuario y/o Contraseña incorrectos' });
         }
 
         const validPassword = await bcrypt.compare(password, user.password_hash);
         if (!validPassword) {
-            return res.status(401).json({ status: 'error', message: 'Credenciales inválidas' });
+            return res.status(401).json({ status: 'error', message: 'Usuario y/o Contraseña incorrectos' });
         }
 
         // Usamos los secretos que ahora vienen del archivo .env

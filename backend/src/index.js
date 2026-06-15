@@ -12,7 +12,7 @@ import morgan from 'morgan';
 import sequelize from './config/db.js';
 import cookieParser from 'cookie-parser';
 
-import 'dotenv/config'; 
+import 'dotenv/config';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
 
@@ -26,13 +26,12 @@ const PORT = process.env.PORT || 4000;
    ========================================================================== */
 app.use(morgan('dev'));
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173', 
+    credentials: true // Permite recibir las cookies del frontend
+}));
 app.use(express.json());
 app.use(cookieParser());
-
-/* ==========================================================================
-   Configuración de Bases de Datos
-   ========================================================================== */
 
 /**
  * Cliente de conexión para Redis.
@@ -47,22 +46,12 @@ redisClient.on('error', (err) => console.error('[Redis] Error de conexión:', er
 /* ==========================================================================
    Definición de Rutas
    ========================================================================== */
-/**
- * @route /api/v1/auth
- * @desc Rutas relacionadas con autenticación y gestión de usuarios (registro, login, etc.)
- * @access Público (Algunas rutas protegidas por token)
- */
-   app.use('/api/v1/auth', authRoutes);
-/**
- * @route GET /api/v1/health
- * @desc Verifica el estado de los servicios subyacentes (Base de datos y Caché).
- * @access Público
- */
+app.use('/api/v1/auth', authRoutes);
 app.get('/api/v1/health', async (req, res) => {
     try {
         // Uso de Sequelize para la consulta cruda de prueba
         const [rows] = await sequelize.query('SELECT 1 + 1 AS solution');
-        
+
         await redisClient.set('ping', 'pong', { EX: 10 });
         const redisReply = await redisClient.get('ping');
 
@@ -76,19 +65,19 @@ app.get('/api/v1/health', async (req, res) => {
         });
     } catch (error) {
         console.error('[Health Check] Falla en la validación de dependencias:', error);
-        res.status(500).json({ 
-            status: 'error', 
-            message: 'Falla interna del servidor al conectar con los servicios.' 
+        res.status(500).json({
+            status: 'error',
+            message: 'Falla interna del servidor al conectar con los servicios.'
         });
     }
 });
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.get('/api-docs.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.send(swaggerSpec);
 });
+
 /* ==========================================================================
    Inicialización del Servidor
    ========================================================================== */
@@ -96,7 +85,7 @@ const startServer = async () => {
     try {
         await redisClient.connect();
         console.log('[Sistema] Conexión establecida con Redis.');
-        
+
         // Lógica de reintentos para MySQL (Soluciona el ECONNREFUSED de Docker)
         let retries = 5;
         while (retries > 0) {
@@ -109,7 +98,7 @@ const startServer = async () => {
                 retries -= 1;
                 // Espera 3 segundos antes de volver a intentar
                 await new Promise(res => setTimeout(res, 3000));
-                
+
                 if (retries === 0) {
                     throw new Error('No se pudo conectar a MySQL después de múltiples intentos.');
                 }
