@@ -3,6 +3,7 @@
  * Valida la existencia y legitimidad de un JSON Web Token (JWT)
  * antes de permitir el acceso a rutas protegidas.
  */
+
 import jwt from 'jsonwebtoken';
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
@@ -39,7 +40,7 @@ export const verifyToken = (req, res, next) => {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({ 
                 status: 'error', 
-                message: 'El token ha expirado. Por favor, inicia sesión nuevamente.' 
+                message: 'Sesion expirada. Por favor, inicia sesión nuevamente.' 
             });
         }
         

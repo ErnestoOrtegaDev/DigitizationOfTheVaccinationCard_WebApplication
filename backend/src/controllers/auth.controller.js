@@ -4,6 +4,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
+import { encodeId } from '../utils/hashids.js'; 
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
@@ -33,7 +34,7 @@ export const register = async (req, res) => {
         res.status(201).json({ 
             status: 'success', 
             message: 'Usuario registrado exitosamente',
-            userId: newUser.id 
+            userId: encodeId(newUser.id) // <-- 2. Enmascaramos el ID antes de enviarlo al Frontend
         });
     } catch (error) {
         console.error('[Auth Controller] Error en registro:', error);
@@ -45,6 +46,8 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
+        // Al usar findOne, Sequelize automáticamente ignorará los usuarios con status 'deleted' 
+        // gracias al defaultScope que configuramos en el modelo.
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
@@ -56,7 +59,9 @@ export const login = async (req, res) => {
             return res.status(401).json({ status: 'error', message: 'Usuario y/o Contraseña incorrectos' });
         }
 
-        // Usamos los secretos que ahora vienen del archivo .env
+        // Nota: Dentro del JWT mantenemos el user.id original (entero). 
+        // Esto es seguro porque el JWT está firmado y nos permite hacer consultas rápidas 
+        // en nuestros middlewares sin tener que decodificar el Hashid cada vez.
         const accessToken = jwt.sign(
             { id: user.id, role: user.role }, 
             ACCESS_TOKEN_SECRET, 
@@ -89,7 +94,11 @@ export const login = async (req, res) => {
         res.status(200).json({ 
             status: 'success', 
             message: 'Autenticación exitosa',
-            user: { email: user.email, role: user.role }
+            user: { 
+                id: encodeId(user.id),  
+                email: user.email, 
+                role: user.role 
+            }
         });
     } catch (error) {
         console.error('[Auth Controller] Error en login:', error);

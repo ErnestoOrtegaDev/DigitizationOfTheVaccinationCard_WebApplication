@@ -8,19 +8,16 @@ import sequelize from '../config/db.js';
 const User = sequelize.define('User', {
     id: {
         type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
     },
     email: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
-        validate: {
-            isEmail: true
-        }
+        unique: true
     },
     password_hash: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.STRING,
         allowNull: false
     },
     role: {
@@ -28,14 +25,28 @@ const User = sequelize.define('User', {
         allowNull: false
     },
     refresh_token: {
-        type: DataTypes.STRING(255),
-        allowNull: true
+        type: DataTypes.STRING
+    },
+    status: {
+        type: DataTypes.ENUM('active', 'inactive', 'deleted'),
+        defaultValue: 'active'
     }
 }, {
     tableName: 'users',
-    timestamps: true,
+    timestamps: true, 
     createdAt: 'created_at',
-    updatedAt: false
+    updatedAt: false, 
+    
+    defaultScope: {
+        where: {
+            status: ['active', 'inactive']
+        }
+    }
 });
+
+User.prototype.softDelete = async function () {
+    this.status = 'deleted';
+    await this.save();
+};
 
 export default User;
