@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
+import Swal from 'sweetalert2';
 import logo from '../assets/logo.png';
 import axios from '../api/axios.js';
+import { Button } from '../components/Button';
 
 export const Login = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ email: '', password: '' });
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        setError(''); // Limpia el error cuando el usuario escribe
     };
 
     const handleSubmit = async (e) => {
@@ -20,19 +20,27 @@ export const Login = () => {
         setLoading(true);
 
         try {
-            // Petición POST al endpoint de login
             const response = await axios.post('/auth/login', {
                 email: formData.email,
                 password: formData.password
             });
 
-            console.log('Login exitoso:', response.data);
-            // Las cookies ya están guardadas en el navegador en este punto.
-            // Redireccionamos a la futura pantalla principal del sistema
+            Swal.fire({
+                icon: 'success',
+                title: '¡Bienvenido!',
+                text: 'Inicio de sesión exitoso',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
             navigate('/dashboard'); 
         } catch (err) {
-            // Capturamos el error enviado por el backend
-            setError(err.response?.data?.message || 'Usuario y/o Contraseña incorrectos');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de acceso',
+                text: err.response?.data?.message || 'Credenciales incorrectas',
+                confirmButtonColor: '#1e3a8a'
+            });
         } finally {
             setLoading(false);
         }
@@ -41,13 +49,10 @@ export const Login = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-blue-50 px-4">
             <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-blue-100 p-8 relative">
-
-                {/* Botón de regreso */}
                 <Link to="/" className="absolute top-6 left-6 text-slate-400 hover:text-primary transition-colors">
                     <ArrowLeft size={24} />
                 </Link>
 
-                {/* Header del Formulario */}
                 <div className="text-center mb-8 mt-4">
                     <div className="flex justify-center mb-4">
                         <div className="bg-blue-50 p-3 rounded-full text-secondary">
@@ -58,14 +63,6 @@ export const Login = () => {
                     <p className="text-sm text-slate-500">Ingresa tus credenciales para continuar</p>
                 </div>
 
-                {/* Alerta de Error */}
-                {error && (
-                    <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm text-center font-medium">
-                        {error}
-                    </div>
-                )}
-
-                {/* Formulario */}
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-1">Correo Electrónico</label>
@@ -79,7 +76,7 @@ export const Login = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-transparent transition-all outline-none"
+                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary outline-none"
                                 placeholder="juan@ejemplo.com"
                             />
                         </div>
@@ -97,23 +94,17 @@ export const Login = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-transparent transition-all outline-none"
+                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-secondary outline-none"
                                 placeholder="••••••••"
                             />
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className={`w-full text-white py-3 px-6 rounded-xl font-bold transition-all shadow-md mt-4 
-                            ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary hover:bg-blue-800 hover:shadow-lg'}`}
-                    >
-                        {loading ? 'Verificando...' : 'Iniciar Sesión'}
-                    </button>
+                    <Button type="submit" variant="primary" isLoading={loading}>
+                        Iniciar Sesión
+                    </Button>
                 </form>
 
-                {/* Footer del Formulario */}
                 <div className="text-center mt-6 text-sm text-slate-600">
                     ¿No tienes una cuenta?{' '}
                     <Link to="/register" className="text-secondary font-bold hover:underline">

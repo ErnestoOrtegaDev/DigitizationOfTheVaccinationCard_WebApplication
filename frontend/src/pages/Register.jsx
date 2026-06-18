@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
+import Swal from 'sweetalert2'; 
 import logo from '../assets/logo.png';
 import axios from '../api/axios.js';
+import { Button } from '../components/Button'; 
 
 export const Register = () => {
   const navigate = useNavigate();
@@ -11,37 +13,53 @@ export const Register = () => {
     password: '',
     confirmPassword: ''
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(''); // Limpia el error
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validación de contraseñas con SweetAlert
     if(formData.password !== formData.confirmPassword) {
-      setError("Las contraseñas no coinciden");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Verifica tus datos',
+        text: 'Las contraseñas no coinciden.',
+        confirmButtonColor: '#2563eb' // Azul secundario
+      });
       return;
     }
     
     setLoading(true);
     
     try {
-      // Petición POST al endpoint de registro
       const response = await axios.post('/auth/register', {
         email: formData.email,
         password: formData.password,
         role: 'citizen' 
       });
 
-      console.log('Registro exitoso:', response.data);
-      // Redireccionamos al login tras un registro exitoso
+      // Alerta de Éxito
+      Swal.fire({
+        icon: 'success',
+        title: '¡Registro Exitoso!',
+        text: 'Tu cuenta ha sido creada correctamente.',
+        timer: 2500,
+        showConfirmButton: false
+      });
+
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al conectar con el servidor');
+      // Alerta de Error desde el backend
+      Swal.fire({
+        icon: 'error',
+        title: 'Error en el registro',
+        text: err.response?.data?.message || 'Hubo un problema al crear tu cuenta.',
+        confirmButtonColor: '#1e3a8a' // Azul primario
+      });
     } finally {
       setLoading(false);
     }
@@ -64,13 +82,6 @@ export const Register = () => {
           <h2 className="text-2xl font-bold text-primary mb-1">Crea tu perfil</h2>
           <p className="text-sm text-slate-500">Únete a VacunApp MX</p>
         </div>
-
-        {/* Alerta de Error */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm text-center font-medium">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -127,14 +138,13 @@ export const Register = () => {
             </div>
           </div>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className={`w-full text-white py-3 px-6 rounded-xl font-bold transition-all shadow-md mt-6 
-              ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-secondary hover:bg-blue-600'}`}
-          >
-            {loading ? 'Registrando...' : 'Registrarme'}
-          </button>
+          {/* Aquí utilizamos nuestro nuevo componente. 
+              Usamos variant="secondary" para mantener el estilo original del registro */}
+          <div className="pt-2">
+            <Button type="submit" variant="secondary" isLoading={loading}>
+              Registrarme
+            </Button>
+          </div>
         </form>
 
         <div className="text-center mt-6 text-sm text-slate-600">
