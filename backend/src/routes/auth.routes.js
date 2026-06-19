@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { register, login } from '../controllers/auth.controller.js';
+import { register, login, logout } from '../controllers/auth.controller.js';
 import { verifyToken, requireRole } from '../middlewares/auth.middleware.js'
 
 const router = express.Router();
@@ -54,6 +54,33 @@ router.post('/register', register);
  */
 router.post('/login', login);
 
+/**
+ * @swagger
+ * /api/v1/auth/logout:
+ * post:
+ * summary: Cierra la sesión del usuario y destruye las cookies de seguridad
+ * tags: [Autenticación]
+ * responses:
+ * '200':
+ * description: Sesión cerrada correctamente
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * status:
+ * type: string
+ * example: success
+ * message:
+ * type: string
+ * example: Sesión cerrada correctamente
+ * '500':
+ * description: Falla interna del servidor
+ */
+router.post('/logout', logout);
+
+
+//Ruta de Prueba para verificar que el token funciona y que el usuario tiene el rol adecuado
 /**
  * @swagger
  * /api/v1/auth/me:

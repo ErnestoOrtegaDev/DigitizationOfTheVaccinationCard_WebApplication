@@ -105,3 +105,46 @@ export const login = async (req, res) => {
         res.status(500).json({ status: 'error', message: 'Falla interna del servidor' });
     }
 };
+
+export const logout = async (req, res) => {
+    try {
+        // Buscamos si el usuario tiene una cookie de refresh_token
+        const cookies = req.cookies;
+        
+        if (cookies?.jwt_refresh) {
+            const refreshToken = cookies.jwt_refresh;
+            
+            // Buscamos al usuario en la BD que tenga ese token
+            const user = await User.findOne({ where: { refresh_token: refreshToken } });
+            
+            // Si lo encontramos, eliminamos el token de la BD (revocación)
+            if (user) {
+                user.refresh_token = null;
+                await user.save();
+            }
+        }
+
+        // Destruimos las cookies en el navegador del cliente
+        res.clearCookie('jwt_access', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+
+        res.clearCookie('jwt_refresh', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+
+        // Enviamos la confirmación
+        res.status(200).json({ 
+            status: 'success', 
+            message: 'Sesión cerrada correctamente' 
+        });
+
+    } catch (error) {
+        console.error('[Auth Controller] Error en logout:', error);
+        res.status(500).json({ status: 'error', message: 'Falla interna del servidor al cerrar sesión' });
+    }
+};
