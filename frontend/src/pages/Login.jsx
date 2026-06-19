@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
 import { Button } from '../components/Button';
-import { useAuthStore } from '../store/authStore'
+import { useAuthStore } from '../store/authStore';
 
 import Swal from 'sweetalert2';
 import logo from '../assets/logo.png';
@@ -10,7 +10,6 @@ import axios from '../api/axios.js';
 
 export const Login = () => {
     const navigate = useNavigate();
-    // Extraemos la función login del store
     const login = useAuthStore((state) => state.login);
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
@@ -29,7 +28,6 @@ export const Login = () => {
                 password: formData.password
             });
 
-            // Usamos Zustand en lugar de localStorage
             login(response.data.user);
 
             Swal.fire({
@@ -42,10 +40,26 @@ export const Login = () => {
 
             navigate('/dashboard');
         } catch (err) {
+            // LÓGICA MEJORADA DE ERRORES
+            let errorTitle = 'Error de acceso';
+            let errorMessage = 'Ocurrió un error inesperado. Intenta más tarde.';
+
+            if (!err.response) {
+                // El servidor está apagado o no hay internet
+                errorTitle = 'Sin conexión';
+                errorMessage = 'No pudimos conectar con el servidor. Intentalo mas tarde';
+            } else if (err.response.status === 401) {
+                // El servidor respondió explícitamente que los datos están mal
+                errorMessage = 'Usuario y/o contraseña incorrectos.';
+            } else {
+                // Cualquier otro error del backend (ej. 500)
+                errorMessage = err.response.data?.message || errorMessage;
+            }
+
             Swal.fire({
                 icon: 'error',
-                title: 'Error de acceso',
-                text: err.response?.data?.message || 'Credenciales incorrectas',
+                title: errorTitle,
+                text: errorMessage,
                 confirmButtonColor: '#1e3a8a'
             });
         } finally {

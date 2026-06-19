@@ -21,11 +21,12 @@ export const useAuthStore = create((set, get) => ({
     logout: async () => {
         try {
             set({ isLoading: true });
-            // Opcional: Avisar al backend para que destruya la cookie/token
-            // await axios.post('/auth/logout'); 
+            // Llamamos al backend para que destruya las cookies y limpie la BD
+            await axios.post('/auth/logout'); 
         } catch (error) {
-            console.error("Error al cerrar sesión", error);
+            console.error("Error al cerrar sesión en el backend", error);
         } finally {
+            // Independientemente de si el backend falló, limpiamos el frontend por seguridad
             set({
                 user: null,
                 isAuthenticated: false,
