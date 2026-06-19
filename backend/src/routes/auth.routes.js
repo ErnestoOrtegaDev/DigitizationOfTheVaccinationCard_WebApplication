@@ -57,25 +57,25 @@ router.post('/login', login);
 /**
  * @swagger
  * /api/v1/auth/logout:
- * post:
- * summary: Cierra la sesión del usuario y destruye las cookies de seguridad
- * tags: [Autenticación]
- * responses:
- * '200':
- * description: Sesión cerrada correctamente
- * content:
- * application/json:
- * schema:
- * type: object
- * properties:
- * status:
- * type: string
- * example: success
- * message:
- * type: string
- * example: Sesión cerrada correctamente
- * '500':
- * description: Falla interna del servidor
+ *   post:
+ *     summary: Cierra la sesión del usuario y destruye las cookies de seguridad
+ *     tags: [Autenticación]
+ *     responses:
+ *       '200':
+ *         description: Sesión cerrada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Sesión cerrada correctamente
+ *       '500':
+ *         description: Falla interna del servidor
  */
 router.post('/logout', logout);
 

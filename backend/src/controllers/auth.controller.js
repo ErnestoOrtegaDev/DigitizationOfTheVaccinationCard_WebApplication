@@ -2,9 +2,9 @@
  * Controlador de Autenticación refactorizado con Sequelize y ES Modules.
  */
 import bcrypt from 'bcrypt';
+import { encodeId } from '../utils/hashids.js'; 
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
-import { encodeId } from '../utils/hashids.js'; 
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
