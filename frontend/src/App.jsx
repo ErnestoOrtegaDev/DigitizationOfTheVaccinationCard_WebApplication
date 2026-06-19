@@ -1,15 +1,34 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
+
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { Dashboard } from './pages/Dashboard'; 
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+
+  // Se ejecuta una sola vez al cargar la app para validar si hay una cookie de sesión activa
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <BrowserRouter>
       <Routes>
+        {/* Rutas Públicas */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        
+        {/* Rutas Protegidas (Envueltas por el componente Cadenero) */}
+        <Route element={<ProtectedRoute />}>
+           <Route path="/dashboard" element={<Dashboard />} />
+           {/* Futuras rutas privadas irán aquí */}
+        </Route>
       </Routes>
     </BrowserRouter>
   );

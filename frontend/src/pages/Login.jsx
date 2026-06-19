@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
+import { Button } from '../components/Button';
+import { useAuthStore } from '../store/authStore'
+
 import Swal from 'sweetalert2';
 import logo from '../assets/logo.png';
 import axios from '../api/axios.js';
-import { Button } from '../components/Button';
 
 export const Login = () => {
     const navigate = useNavigate();
+    // Extraemos la función login del store
+    const login = useAuthStore((state) => state.login);
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
 
@@ -25,6 +29,9 @@ export const Login = () => {
                 password: formData.password
             });
 
+            // Usamos Zustand en lugar de localStorage
+            login(response.data.user);
+
             Swal.fire({
                 icon: 'success',
                 title: '¡Bienvenido!',
@@ -33,7 +40,7 @@ export const Login = () => {
                 showConfirmButton: false
             });
 
-            navigate('/dashboard'); 
+            navigate('/dashboard');
         } catch (err) {
             Swal.fire({
                 icon: 'error',
