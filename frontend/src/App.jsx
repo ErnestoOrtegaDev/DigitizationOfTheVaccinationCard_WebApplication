@@ -5,7 +5,8 @@ import { useAuthStore } from './store/authStore';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
-import { Dashboard } from './pages/Dashboard'; 
+import { Dashboard } from './pages/Dashboard';
+import { DashboardLayout } from './components/layout/DashboardLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -23,11 +24,15 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
+
         {/* Rutas Protegidas (Envueltas por el componente Cadenero) */}
         <Route element={<ProtectedRoute />}>
-           <Route path="/dashboard" element={<Dashboard />} />
-           {/* Futuras rutas privadas irán aquí */}
+          <Route element={<DashboardLayout/>}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            
+            {/* Futuras rutas privadas irán aquí */}
+
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
