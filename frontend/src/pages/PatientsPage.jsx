@@ -8,6 +8,7 @@ export const PatientsPage = () => {
   const [loading, setLoading] = useState(true);
   // Estado para abrir y cerrar el modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Función para traer los datos (la separamos para poder reutilizarla al guardar)
   const fetchPatients = () => {
@@ -25,6 +26,15 @@ export const PatientsPage = () => {
         setLoading(false);
       });
   };
+
+  // 🚀 LÓGICA DE FILTRADO EN TIEMPO REAL:
+  const filteredPatients = patients.filter((patient) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      patient.full_name.toLowerCase().includes(term) ||
+      patient.curp.toLowerCase().includes(term)
+    );
+  });
 
   useEffect(() => {
     fetchPatients();
@@ -64,12 +74,14 @@ export const PatientsPage = () => {
             <input
               type="text"
               placeholder="Buscar paciente o CURP..."
+              value={searchTerm} // 🚀 Conecta el estado
+              onChange={(e) => setSearchTerm(e.target.value)} // 🚀 Actualiza el estado al escribir
               className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-900 text-slate-700 placeholder-slate-400"
             />
           </div>
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
-            Total: {patients.length}{" "}
-            {patients.length === 1 ? "paciente" : "pacientes"}
+            Total: {filteredPatients.length}{" "}
+            {filteredPatients.length === 1 ? "encontrado" : "encontrados"}
           </div>
         </div>
 
@@ -96,7 +108,7 @@ export const PatientsPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
-                {patients.map((patient) => (
+                {filteredPatients.map((patient) => (
                   <tr
                     key={patient.id}
                     className="hover:bg-slate-50/80 transition-colors"
