@@ -1,7 +1,6 @@
-
-import express from 'express';
-import { register, login, logout } from '../controllers/auth.controller.js';
-import { verifyToken, requireRole } from '../middlewares/auth.middleware.js'
+import express from "express";
+import { register, login, logout } from "../controllers/auth.controller.js";
+import { verifyToken, requireRole } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -29,7 +28,7 @@ const router = express.Router();
  *       '201':
  *         description: Usuario registrado exitosamente
  */
-router.post('/register', register);
+router.post("/register", register);
 
 /**
  * @swagger
@@ -52,7 +51,7 @@ router.post('/register', register);
  *       '200':
  *         description: Autenticación exitosa
  */
-router.post('/login', login);
+router.post("/login", login);
 
 /**
  * @swagger
@@ -77,8 +76,7 @@ router.post('/login', login);
  *       '500':
  *         description: Falla interna del servidor
  */
-router.post('/logout', logout);
-
+router.post("/logout", logout);
 
 //Ruta de Prueba para verificar que el token funciona y que el usuario tiene el rol adecuado
 /**
@@ -93,12 +91,12 @@ router.post('/logout', logout);
  *       '200':
  *         description: Datos obtenidos correctamente
  */
-router.get('/me', verifyToken, (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        message: '¡Tienes acceso a la zona segura!',
-        userData: req.user
-    });
+router.get("/me", verifyToken, (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "¡Tienes acceso a la zona segura!",
+    userData: req.user,
+  });
 });
 
 export default router;

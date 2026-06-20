@@ -1,13 +1,14 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { useAuthStore } from './store/authStore';
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useAuthStore } from "./store/authStore";
 
-import { Home } from './pages/Home';
-import { Login } from './pages/Login';
-import { Register } from './pages/Register';
-import { Dashboard } from './pages/Dashboard';
-import { DashboardLayout } from './components/layout/DashboardLayout';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { Home } from "./pages/Home";
+import { Login } from "./pages/Login";
+import { Register } from "./pages/Register";
+import { Dashboard } from "./pages/Dashboard";
+import { PatientsPage } from "./pages/PatientsPage";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -27,11 +28,10 @@ function App() {
 
         {/* Rutas Protegidas (Envueltas por el componente Cadenero) */}
         <Route element={<ProtectedRoute />}>
-          <Route element={<DashboardLayout/>}>
+          <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            
+            <Route path="/patients" element={<PatientsPage />} />
             {/* Futuras rutas privadas irán aquí */}
-
           </Route>
         </Route>
       </Routes>
