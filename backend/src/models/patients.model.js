@@ -37,7 +37,7 @@ const Patient = sequelize.define(
   },
   {
     tableName: "patients",
-    timestamps: false, // Si tu tabla no tiene updated_at, ponle false
+    timestamps: false, // Si la tabla no tiene updated_at, ponle false
     createdAt: "false",
     updatedAt: false, // Desactivado si en init.sql no mapeaste un updatedAt
   },
