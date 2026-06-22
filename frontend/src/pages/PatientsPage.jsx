@@ -27,7 +27,7 @@ export const PatientsPage = () => {
       });
   };
 
-  // 🚀 LÓGICA DE FILTRADO EN TIEMPO REAL:
+  // LÓGICA DE FILTRADO EN TIEMPO REAL:
   const filteredPatients = patients.filter((patient) => {
     const term = searchTerm.toLowerCase();
     return (
@@ -75,7 +75,7 @@ export const PatientsPage = () => {
               type="text"
               placeholder="Buscar paciente o CURP..."
               value={searchTerm} // 🚀 Conecta el estado
-              onChange={(e) => setSearchTerm(e.target.value)} // 🚀 Actualiza el estado al escribir
+              onChange={(e) => setSearchTerm(e.target.value)} // Actualiza el estado al escribir
               className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-900 text-slate-700 placeholder-slate-400"
             />
           </div>

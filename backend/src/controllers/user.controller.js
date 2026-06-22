@@ -215,54 +215,5 @@ userController.softDeleteUser = async (req, res) => {
     }
 };
 
-/**
- * @swagger
- * /api/v1/users/hard/{id}:
- * delete:
- * summary: Realiza un borrado físico definitivo eliminando el registro de la base de datos
- * tags: [Users]
- * parameters:
- * - in: path
- * name: id
- * required: true
- * schema:
- * type: string
- * description: ID del usuario a eliminar permanentemente
- * responses:
- * 200:
- * description: El registro del usuario ha sido borrado permanentemente.
- * 404:
- * description: El usuario que intenta eliminar no existe.
- * 500:
- * description: Error interno en el servidor.
- */
-userController.hardDeleteUser = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const user = await User.findByPk(id);
-        if (!user) {
-            return res.status(404).json({ 
-                status: 'error', 
-                message: 'El usuario que intenta eliminar permanentemente no existe.' 
-            });
-        }
-
-        // Eliminar fila completa de la tabla de la base de datos
-        await user.destroy(); 
-        
-        return res.status(200).json({ 
-            status: 'success', 
-            message: 'El registro del usuario ha sido borrado permanentemente de la base de datos.' 
-        });
-    } catch (error) {
-        console.error('[User Controller] Error en hardDeleteUser:', error);
-        return res.status(500).json({ 
-            status: 'error', 
-            message: 'Error interno en el servidor al procesar el borrado físico.' 
-        });
-    }
-};
-
 // Se empaquetan todas las funciones en una sola variable para exportar limpiamente
 export default userController;

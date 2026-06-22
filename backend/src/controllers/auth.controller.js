@@ -34,7 +34,7 @@ export const register = async (req, res) => {
         res.status(201).json({ 
             status: 'success', 
             message: 'Usuario registrado exitosamente',
-            userId: encodeId(newUser.id) // <-- 2. Enmascaramos el ID antes de enviarlo al Frontend
+            userId: encodeId(newUser.id) // <-- Enmascaramos el ID antes de enviarlo al Frontend
         });
     } catch (error) {
         console.error('[Auth Controller] Error en registro:', error);
