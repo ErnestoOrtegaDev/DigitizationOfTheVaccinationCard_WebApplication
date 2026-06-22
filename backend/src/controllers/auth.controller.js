@@ -12,9 +12,30 @@ const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 export const register = async (req, res) => {
     const { email, password, role } = req.body;
 
+    // Validar que no falten campos
     if (!email || !password || !role) {
         return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios' });
     }
+
+    // --- VALIDACIÓN ESTRICTA DE SEGURIDAD ---
+    
+    // RegEx para validar formato de correo electrónico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ 
+            status: 'error', 
+            message: 'Formato de correo electrónico inválido. No se permiten caracteres especiales no autorizados.' 
+        });
+    }
+
+    // Validar longitud mínima de contraseña (seguridad básica)
+    if (password.length < 8) {
+        return res.status(400).json({ 
+            status: 'error', 
+            message: 'La contraseña debe tener al menos 8 caracteres.' 
+        });
+    }
+    // ------------------------------------------
 
     try {
         const existingUser = await User.findOne({ where: { email } });
