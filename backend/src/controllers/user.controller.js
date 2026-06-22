@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { encodeId } from '../utils/hashids.js';
+import { encodeId, decodeId } from '../utils/hashids.js';
 import User from '../models/user.model.js';
 
 /**
@@ -62,7 +62,19 @@ export const updateUser = async (req, res) => {
     const { email, role, password } = req.body;
 
     try {
-        const user = await User.findByPk(id);
+        // Decodificamos el ID que viene en la URL
+        const decodedId = decodeId(id);
+        
+        // Si el ID no se pudo decodificar (formato inválido), rebotamos la petición
+        if (!decodedId) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'El identificador de usuario proporcionado no es válido.'
+            });
+        }
+
+        // Buscamos usando el ID real numérico
+        const user = await User.findByPk(decodedId);
         if (!user) {
             return res.status(404).json({ 
                 status: 'error', 
@@ -70,11 +82,10 @@ export const updateUser = async (req, res) => {
             });
         }
 
-        // Actualización parcial de campos si vienen en la petición
+        // Actualización parcial
         if (email) user.email = email;
         if (role) user.role = role;
         
-        // Si se proporciona una nueva contraseña, se vuelve a encriptar con un nuevo Salt
         if (password) {
             const salt = await bcrypt.genSalt(10);
             user.password_hash = await bcrypt.hash(password, salt);
@@ -99,7 +110,18 @@ export const softDeleteUser = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const user = await User.findByPk(id);
+        // Decodificamos el ID
+        const decodedId = decodeId(id);
+        
+        if (!decodedId) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'El identificador de usuario proporcionado no es válido.'
+            });
+        }
+
+        // Buscamos con el número real
+        const user = await User.findByPk(decodedId);
         if (!user) {
             return res.status(404).json({ 
                 status: 'error', 
