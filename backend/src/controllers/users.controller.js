@@ -10,9 +10,39 @@ import User from '../models/user.model.js';
 const userController = {};
 
 /**
- * @route POST /api/v1/users
- * @desc Crea un nuevo usuario en el sistema. Si no se proporciona una contraseña, se asigna una por defecto.
- * @access Privado (Administrador / Personal de Salud)
+ * @swagger
+ * /api/v1/users:
+ * post:
+ * summary: Crea un nuevo usuario en el sistema con contraseña por defecto
+ * tags: [Users]
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * required:
+ * - email
+ * - role
+ * properties:
+ * email:
+ * type: string
+ * example: admin@vacunapp.mx
+ * role:
+ * type: string
+ * example: admin
+ * password:
+ * type: string
+ * example: MiClaveSegura123
+ * responses:
+ * 201:
+ * description: Usuario creado exitosamente.
+ * 400:
+ * description: Los campos correo electrónico y rol son obligatorios.
+ * 409:
+ * description: El correo electrónico ya se encuentra registrado.
+ * 500:
+ * description: Ocurrió un error interno en el servidor.
  */
 userController.createUserWithDefaultPassword = async (req, res) => {
     const { email, role, password } = req.body;
@@ -65,9 +95,38 @@ userController.createUserWithDefaultPassword = async (req, res) => {
 };
 
 /**
- * @route PUT /api/v1/users/:id
- * @desc Modifica los datos generales o actualiza la contraseña de un usuario mediante su ID.
- * @access Privado (Administrador / Propietario de la cuenta)
+ * @swagger
+ * /api/v1/users/{id}:
+ * put:
+ * summary: Modifica los datos generales o actualiza la contraseña de un usuario mediante su ID
+ * tags: [Users]
+ * parameters:
+ * - in: path
+ * name: id
+ * required: true
+ * schema:
+ * type: string
+ * description: ID del usuario a modificar
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * email:
+ * type: string
+ * role:
+ * type: string
+ * password:
+ * type: string
+ * responses:
+ * 200:
+ * description: Los datos del usuario se modificaron correctamente.
+ * 404:
+ * description: El usuario solicitado no existe.
+ * 500:
+ * description: Falla interna en el servidor.
  */
 userController.updateUser = async (req, res) => {
     const { id } = req.params;
@@ -79,7 +138,7 @@ userController.updateUser = async (req, res) => {
             return res.status(404).json({ 
                 status: 'error', 
                 message: 'El usuario solicitado no existe o no fue encontrado.' 
-            });
+                });
         }
 
         // Actualización parcial de campos si vienen en la petición
@@ -97,7 +156,7 @@ userController.updateUser = async (req, res) => {
         return res.status(200).json({ 
             status: 'success', 
             message: 'Los datos del usuario se modificaron correctamente.' 
-            });
+        });
     } catch (error) {
         console.error('[User Controller] Error en updateUser:', error);
         return res.status(500).json({ 
@@ -108,9 +167,25 @@ userController.updateUser = async (req, res) => {
 };
 
 /**
- * @route DELETE /api/v1/users/soft/:id
- * @desc Realiza un borrado lógico (Soft Delete) cambiando el estado del usuario a 'deleted'.
- * @access Privado (Administrador)
+ * @swagger
+ * /api/v1/users/soft/{id}:
+ * delete:
+ * summary: Realiza un borrado lógico (Soft Delete) cambiando el estado del usuario
+ * tags: [Users]
+ * parameters:
+ * - in: path
+ * name: id
+ * required: true
+ * schema:
+ * type: string
+ * description: ID del usuario a desactivar
+ * responses:
+ * 200:
+ * description: El usuario ha sido desactivado del sistema correctamente.
+ * 404:
+ * description: El usuario que intenta desactivar no existe.
+ * 500:
+ * description: Error interno en el servidor.
  */
 userController.softDeleteUser = async (req, res) => {
     const { id } = req.params;
@@ -141,9 +216,25 @@ userController.softDeleteUser = async (req, res) => {
 };
 
 /**
- * @route DELETE /api/v1/users/hard/:id
- * @desc Realiza un borrado físico definitivo eliminando el registro directamente de MySQL.
- * @access Privado (Administrador)
+ * @swagger
+ * /api/v1/users/hard/{id}:
+ * delete:
+ * summary: Realiza un borrado físico definitivo eliminando el registro de la base de datos
+ * tags: [Users]
+ * parameters:
+ * - in: path
+ * name: id
+ * required: true
+ * schema:
+ * type: string
+ * description: ID del usuario a eliminar permanentemente
+ * responses:
+ * 200:
+ * description: El registro del usuario ha sido borrado permanentemente.
+ * 404:
+ * description: El usuario que intenta eliminar no existe.
+ * 500:
+ * description: Error interno en el servidor.
  */
 userController.hardDeleteUser = async (req, res) => {
     const { id } = req.params;
