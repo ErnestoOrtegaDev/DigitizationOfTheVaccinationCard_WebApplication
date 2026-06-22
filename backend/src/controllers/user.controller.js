@@ -7,9 +7,7 @@ import User from '../models/user.model.js';
  * Contiene la lógica empresarial para la creación, modificación y eliminación de cuentas.
  */
 
-const userController = {};
-
-userController.createUserWithDefaultPassword = async (req, res) => {
+export const createUserWithDefaultPassword = async (req, res) => {
     const { email, role, password } = req.body;
 
     // Validación de campos requeridos
@@ -59,8 +57,7 @@ userController.createUserWithDefaultPassword = async (req, res) => {
     }
 };
 
-
-userController.updateUser = async (req, res) => {
+export const updateUser = async (req, res) => {
     const { id } = req.params;
     const { email, role, password } = req.body;
 
@@ -70,7 +67,7 @@ userController.updateUser = async (req, res) => {
             return res.status(404).json({ 
                 status: 'error', 
                 message: 'El usuario solicitado no existe o no fue encontrado.' 
-                });
+            });
         }
 
         // Actualización parcial de campos si vienen en la petición
@@ -98,8 +95,7 @@ userController.updateUser = async (req, res) => {
     }
 };
 
-
-userController.softDeleteUser = async (req, res) => {
+export const softDeleteUser = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -126,6 +122,3 @@ userController.softDeleteUser = async (req, res) => {
         });
     }
 };
-
-// Se empaquetan todas las funciones en una sola variable para exportar limpiamente
-export default userController;
