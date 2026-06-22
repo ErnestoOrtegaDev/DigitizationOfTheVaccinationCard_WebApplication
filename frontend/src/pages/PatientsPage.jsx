@@ -1,23 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Users, UserPlus, Search, Eye, Trash2 } from "lucide-react";
-// Importamos el nuevo componente del modal
+import { Users, UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 import { PatientModal } from "../components/PatientModal";
 
 export const PatientsPage = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
-  // Estado para abrir y cerrar el modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Función para traer los datos (la separamos para poder reutilizarla al guardar)
   const fetchPatients = () => {
     setLoading(true);
     fetch("http://localhost:4000/api/v1/patients/user/1")
       .then((res) => res.json())
       .then((response) => {
         if (response.status === "success") {
-          setPatients(response.data);
+          setPatients(response.data || []);
         }
         setLoading(false);
       })
@@ -27,13 +25,47 @@ export const PatientsPage = () => {
       });
   };
 
-  // LÓGICA DE FILTRADO EN TIEMPO REAL:
+  // 1. FUNCIÓN EDITAR: Extrae los datos del paciente desde la base de datos
+  const handleEditClick = (id) => {
+    fetch(`http://localhost:4000/api/v1/patients/${id}`)
+      .then((res) => res.json())
+      .then((response) => {
+        if (response.status === "success") {
+          setSelectedPatient(response.data);
+          setIsModalOpen(true);
+        }
+      })
+      .catch((error) => console.error("Error fetching single patient:", error));
+  };
+
+  // 2. FUNCIÓN ELIMINAR (SOFT DELETE): Cambia el estatus a inactivo en BD
+  const handleSoftDelete = (id) => {
+    if (
+      window.confirm("¿Seguro que deseas marcar como inactivo a este paciente?")
+    ) {
+      fetch(`http://localhost:4000/api/v1/patients/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "inactive" }), // Sincronizado con el enum estricto 'inactive' de tu backend
+      })
+        .then((res) => res.json())
+        .then((response) => {
+          if (response.status === "success") {
+            fetchPatients();
+          }
+        })
+        .catch((error) => console.error("Error doing soft delete:", error));
+    }
+  };
+
+  // Filtrado seguro contra valores nulos o indefinidos de la BD
   const filteredPatients = patients.filter((patient) => {
     const term = searchTerm.toLowerCase();
-    return (
-      patient.full_name.toLowerCase().includes(term) ||
-      patient.curp.toLowerCase().includes(term)
-    );
+    const fullName = patient.full_name ? patient.full_name.toLowerCase() : "";
+    const curp = patient.curp ? patient.curp.toLowerCase() : "";
+    return fullName.includes(term) || curp.includes(term);
   });
 
   useEffect(() => {
@@ -53,9 +85,11 @@ export const PatientsPage = () => {
             Gestiona y revisa los perfiles de vacunación asignados a tu cuenta.
           </p>
         </div>
-        {/* Evento onClick para abrir el modal */}
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setSelectedPatient(null);
+            setIsModalOpen(true);
+          }}
           className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition-colors text-sm flex items-center gap-2"
         >
           <UserPlus size={18} />
@@ -74,8 +108,8 @@ export const PatientsPage = () => {
             <input
               type="text"
               placeholder="Buscar paciente o CURP..."
-              value={searchTerm} // 🚀 Conecta el estado
-              onChange={(e) => setSearchTerm(e.target.value)} // Actualiza el estado al escribir
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-900 text-slate-700 placeholder-slate-400"
             />
           </div>
@@ -90,9 +124,9 @@ export const PatientsPage = () => {
           <div className="p-14 text-center text-slate-500 font-medium">
             Cargando pacientes del sistema...
           </div>
-        ) : patients.length === 0 ? (
+        ) : filteredPatients.length === 0 ? (
           <div className="p-14 text-center text-slate-500 font-medium">
-            No hay pacientes registrados en este perfil de administrador.
+            No se encontraron pacientes registrados con esos criterios.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -116,8 +150,10 @@ export const PatientsPage = () => {
                     <td className="p-4 pl-6 font-semibold text-slate-800">
                       {patient.full_name}
                     </td>
-                    <td className="p-4 font-mono text-xs text-slate-500 bg-slate-50/40 px-2 py-1 rounded-md inline-block my-3 ml-4">
-                      {patient.curp}
+                    <td className="p-4">
+                      <span className="font-mono text-xs text-slate-500 bg-slate-50/40 px-2 py-1 rounded-md">
+                        {patient.curp}
+                      </span>
                     </td>
                     <td className="p-4 text-center">
                       <span
@@ -141,12 +177,14 @@ export const PatientsPage = () => {
                     <td className="p-4 text-center pr-6">
                       <div className="flex items-center justify-center gap-3">
                         <button
-                          className="text-slate-500 hover:text-blue-900 transition-colors p-1.5 hover:bg-slate-100 rounded-lg"
-                          title="Ver Cartilla"
+                          onClick={() => handleEditClick(patient.id)}
+                          className="text-slate-400 hover:text-blue-900 transition-colors p-1.5 hover:bg-slate-100 rounded-lg"
+                          title="Editar Cartilla"
                         >
-                          <Eye size={18} />
+                          <Pencil size={18} />
                         </button>
                         <button
+                          onClick={() => handleSoftDelete(patient.id)}
                           className="text-slate-400 hover:text-red-600 transition-colors p-1.5 hover:bg-red-50 rounded-lg"
                           title="Eliminar Paciente"
                         >
@@ -161,12 +199,14 @@ export const PatientsPage = () => {
           </div>
         )}
       </div>
-
-      {/* Renderizamos el Modal pasándole los controles y la función de refrescar */}
       <PatientModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedPatient(null);
+        }}
         onSave={fetchPatients}
+        patientData={selectedPatient}
       />
     </div>
   );

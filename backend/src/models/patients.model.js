@@ -17,6 +17,16 @@ const Patient = sequelize.define(
       type: DataTypes.STRING(18),
       allowNull: false,
       unique: true,
+      validate: {
+        is: {
+          args: [/^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z\d]\d$/],
+          msg: "El formato de la CURP no es válido.",
+        },
+        len: {
+          args: [18, 18],
+          msg: "La CURP debe tener exactamente 18 caracteres.",
+        },
+      },
     },
     full_name: {
       type: DataTypes.STRING(255),
@@ -37,9 +47,7 @@ const Patient = sequelize.define(
   },
   {
     tableName: "patients",
-    timestamps: false, // Si la tabla no tiene updated_at, ponle false
-    createdAt: "false",
-    updatedAt: false, // Desactivado si en init.sql no mapeaste un updatedAt
+    timestamps: false,
   },
 );
 

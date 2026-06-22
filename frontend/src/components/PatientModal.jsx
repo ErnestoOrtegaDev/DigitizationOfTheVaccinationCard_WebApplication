@@ -1,24 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
-export const PatientModal = ({ isOpen, onClose, onSave }) => {
-  // Estado inicial con los campos exactos de tu base de datos
+export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
+  // Estado inicial con los campos limpios
   const [formData, setFormData] = useState({
     full_name: "",
     curp: "",
     gender: "",
     birth_date: "",
-    status: "Activo", // Estatus por defecto
   });
 
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Efecto reactivo para alternar entre Modo Creación y Modo Edición
+  useEffect(() => {
+    if (patientData) {
+      setFormData({
+        full_name: patientData.full_name || "",
+        curp: patientData.curp || "",
+        gender: patientData.gender || "",
+        birth_date: patientData.birth_date || "",
+      });
+    } else {
+      setFormData({
+        full_name: "",
+        curp: "",
+        gender: "",
+        birth_date: "",
+      });
+    }
+    setError("");
+  }, [patientData, isOpen]);
+
   if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Si es la CURP, la convertimos automáticamente a mayúsculas
     setFormData({
       ...formData,
       [name]: name === "curp" ? value.toUpperCase() : value,
@@ -30,7 +48,6 @@ export const PatientModal = ({ isOpen, onClose, onSave }) => {
     setError("");
     setSubmitting(true);
 
-    // Validación rápida de longitud de CURP antes de mandar al Backend
     if (formData.curp.length !== 18) {
       setError("La CURP debe tener exactamente 18 caracteres.");
       setSubmitting(false);
@@ -38,36 +55,36 @@ export const PatientModal = ({ isOpen, onClose, onSave }) => {
     }
 
     try {
-      // Hacemos el POST al endpoint de tu contenedor en Docker
-      const response = await fetch("http://localhost:4000/api/v1/patients", {
-        method: "POST",
+      const url = patientData
+        ? `http://localhost:4000/api/v1/patients/${patientData.id}`
+        : "http://localhost:4000/api/v1/patients";
+
+      const method = patientData ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
-          user_id: 1, // ID del usuario administrador asociado
+          full_name: formData.full_name,
+          curp: formData.curp,
+          gender: formData.gender,
+          birth_date: formData.birth_date,
+          user_id: 1, // ID fijo para tus entornos locales de prueba
         }),
       });
 
       const result = await response.json();
 
       if (result.status === "success") {
-        onSave(); // Refresca la tabla de pacientes
-        onClose(); // Cierra el modal
-        setFormData({
-          full_name: "",
-          curp: "",
-          gender: "",
-          birth_date: "",
-          status: "Activo",
-        });
+        onSave();
+        onClose();
       } else {
-        // Aquí SequelizeUniqueConstraintError va a mandar el mensaje si la CURP ya existe
-        setError(result.message || "Error al registrar al paciente.");
+        setError(result.message || "Error al procesar la solicitud.");
       }
     } catch (err) {
-      console.error("Error post patient:", err);
+      console.error("Error en el formulario de paciente:", err);
       setError("No se pudo conectar con el servidor.");
     } finally {
       setSubmitting(false);
@@ -77,17 +94,22 @@ export const PatientModal = ({ isOpen, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-lg overflow-hidden mx-4">
-        {/* Encabezado del Modal */}
+        {/* Encabezado del Modal Dinámico */}
         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div>
             <h2 className="text-xl font-bold text-slate-800">
-              Registrar Nuevo Paciente
+              {patientData
+                ? "Editar Perfil de Paciente"
+                : "Registrar Nuevo Paciente"}
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Ingresa los datos oficiales del ciudadano.
+              {patientData
+                ? "Modifica los datos oficiales del ciudadano."
+                : "Ingresa los datos oficiales del ciudadano."}
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
           >
@@ -152,6 +174,7 @@ export const PatientModal = ({ isOpen, onClose, onSave }) => {
                 <option value="">Selecciona...</option>
                 <option value="M">Masculino (M)</option>
                 <option value="F">Femenino (F)</option>
+                <option value="O">Otro (O)</option>
               </select>
             </div>
           </div>
@@ -186,7 +209,11 @@ export const PatientModal = ({ isOpen, onClose, onSave }) => {
               disabled={submitting}
               className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition-colors text-sm disabled:opacity-50"
             >
-              {submitting ? "Guardando..." : "Guardar Paciente"}
+              {submitting
+                ? "Guardando..."
+                : patientData
+                  ? "Guardar Cambios"
+                  : "Guardar Paciente"}
             </button>
           </div>
         </form>
