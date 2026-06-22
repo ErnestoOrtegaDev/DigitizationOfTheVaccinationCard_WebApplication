@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Users, UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 import { PatientModal } from "../components/PatientModal";
+import Swal from "sweetalert2"; // <-- ¡NUEVO! Importamos SweetAlert2
+import { toast } from "sonner"; // <-- ¡NUEVO! Importamos Sonner
 
 export const PatientsPage = () => {
   const [patients, setPatients] = useState([]);
@@ -38,26 +40,46 @@ export const PatientsPage = () => {
       .catch((error) => console.error("Error fetching single patient:", error));
   };
 
-  // 2. FUNCIÓN ELIMINAR (SOFT DELETE): Cambia el estatus a inactivo en BD
+  // 2. FUNCIÓN ELIMINAR (SOFT DELETE) CON SWEETALERT2 Y SONNER
   const handleSoftDelete = (id) => {
-    if (
-      window.confirm("¿Seguro que deseas marcar como inactivo a este paciente?")
-    ) {
-      fetch(`http://localhost:4000/api/v1/patients/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "inactive" }), // Sincronizado con el enum estricto 'inactive' de tu backend
-      })
-        .then((res) => res.json())
-        .then((response) => {
-          if (response.status === "success") {
-            fetchPatients();
-          }
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "El paciente se marcará como inactivo en el sistema.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#1e3a8a", // Color azul-900 para mantener tu paleta de estilos
+      cancelButtonColor: "#64748b", // Color slate-500 cosmético para el botón cancelar
+      confirmButtonText: "Sí, inactivar",
+      cancelButtonText: "Cancelar",
+      background: "#ffffff",
+      customClass: {
+        popup: "rounded-2xl", // Aplica bordes redondeados modernos para que haga juego con tu UI
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`http://localhost:4000/api/v1/patients/${id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: "inactive" }),
         })
-        .catch((error) => console.error("Error doing soft delete:", error));
-    }
+          .then((res) => res.json())
+          .then((response) => {
+            if (response.status === "success") {
+              fetchPatients();
+              // Notificación sutil y moderna usando Sonner
+              toast.success("Paciente marcado como inactivo correctamente.");
+            } else {
+              toast.error(response.message || "No se pudo cambiar el estatus.");
+            }
+          })
+          .catch((error) => {
+            console.error("Error doing soft delete:", error);
+            toast.error("Error de conexión con el servidor.");
+          });
+      }
+    });
   };
 
   // Filtrado seguro contra valores nulos o indefinidos de la BD
@@ -199,6 +221,7 @@ export const PatientsPage = () => {
           </div>
         )}
       </div>
+
       <PatientModal
         isOpen={isModalOpen}
         onClose={() => {

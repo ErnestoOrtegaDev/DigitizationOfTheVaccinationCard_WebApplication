@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { toast } from "sonner"; // <-- ¡NUEVO! Importamos Sonner para notificaciones modernas
 
 export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
   // Estado inicial con los campos limpios
@@ -80,12 +81,21 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
       if (result.status === "success") {
         onSave();
         onClose();
+
+        // ¡NUEVO! Lanzamos la notificación flotante dependiendo del modo de uso
+        if (method === "POST") {
+          toast.success("¡Paciente registrado exitosamente!");
+        } else {
+          toast.success("¡Cambios guardados con éxito!");
+        }
       } else {
         setError(result.message || "Error al procesar la solicitud.");
+        toast.error(result.message || "Verifica los datos del formulario."); // Alerta visual de error rápida
       }
     } catch (err) {
       console.error("Error en el formulario de paciente:", err);
       setError("No se pudo conectar con el servidor.");
+      toast.error("Error crítico: No hay conexión con el backend.");
     } finally {
       setSubmitting(false);
     }
