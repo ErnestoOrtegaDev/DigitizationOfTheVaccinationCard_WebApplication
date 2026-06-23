@@ -12,7 +12,6 @@ export const createPatient = async (req, res) => {
       });
     }
 
-    // El user_id llega como entero (gracias al JWT). Lo dejamos pasar directo.
     const newPatient = await Patient.create({
       user_id,
       curp,
@@ -25,7 +24,7 @@ export const createPatient = async (req, res) => {
       status: "success",
       message: "Paciente registrado exitosamente.",
       data: {
-        patientId: encodeId(newPatient.id), // Enmascaramos el ID del paciente creado
+        patientId: encodeId(newPatient.id),
       },
     });
   } catch (error) {
@@ -51,17 +50,16 @@ export const createPatient = async (req, res) => {
 
 export const getPatientsByCreator = async (req, res) => {
   try {
-    const { userId } = req.params; // Llega el número entero (ej. 1) desde el JWT
+    const { userId } = req.params;
 
     const patients = await Patient.findAll({
       where: { user_id: userId, status: "active" },
     });
 
-    // Transformamos los IDs de los pacientes para el frontend
     const obfuscatedPatients = patients.map((p) => {
       const data = p.toJSON();
-      data.id = encodeId(data.id); // El ID del paciente pasa a Hash
-      data.user_id = encodeId(data.user_id); // El ID del creador pasa a Hash en el JSON de salida
+      data.id = encodeId(data.id);
+      data.user_id = encodeId(data.user_id);
       return data;
     });
 
@@ -77,7 +75,7 @@ export const getPatientsByCreator = async (req, res) => {
 
 export const getPatientById = async (req, res) => {
   try {
-    const { id } = req.params; // Aquí sí llega el HASH del paciente desde la URL
+    const { id } = req.params;
     const realPatientId = decodeId(id);
 
     if (!realPatientId) {
@@ -110,7 +108,7 @@ export const getPatientById = async (req, res) => {
 
 export const updatePatient = async (req, res) => {
   try {
-    const { id } = req.params; // Llega el HASH del paciente
+    const { id } = req.params;
     const { curp, full_name, birth_date, gender, status } = req.body;
     const realPatientId = decodeId(id);
 
@@ -159,7 +157,7 @@ export const updatePatient = async (req, res) => {
 
 export const deletePatient = async (req, res) => {
   try {
-    const { id } = req.params; // Llega el HASH del paciente
+    const { id } = req.params;
     const realPatientId = decodeId(id);
 
     if (!realPatientId) {
@@ -194,7 +192,7 @@ export const deletePatient = async (req, res) => {
 
 export const getAllPatientsByCreator = async (req, res) => {
   try {
-    const { userId } = req.params; // Llega entero '1' desde la URL
+    const { userId } = req.params;
 
     const patients = await Patient.findAll({
       where: { user_id: userId },
@@ -202,7 +200,7 @@ export const getAllPatientsByCreator = async (req, res) => {
 
     const obfuscatedPatients = patients.map((p) => {
       const data = p.toJSON();
-      data.id = encodeId(data.id); // Enmascaramos el ID del paciente para el JSON de respuesta
+      data.id = encodeId(data.id);
       data.user_id = encodeId(data.user_id);
       return data;
     });

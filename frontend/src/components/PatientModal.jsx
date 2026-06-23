@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { toast } from "sonner"; // <-- ¡NUEVO! Importamos Sonner para notificaciones modernas
+import { toast } from "sonner";
 
 export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
-  // Estado inicial con los campos limpios
   const [formData, setFormData] = useState({
     full_name: "",
     curp: "",
@@ -14,7 +13,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Efecto reactivo para alternar entre Modo Creación y Modo Edición
   useEffect(() => {
     if (patientData) {
       setFormData({
@@ -72,7 +70,7 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
           curp: formData.curp,
           gender: formData.gender,
           birth_date: formData.birth_date,
-          user_id: 1, // ID fijo para tus entornos locales de prueba
+          user_id: 1,
         }),
       });
 
@@ -82,7 +80,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
         onSave();
         onClose();
 
-        // ¡NUEVO! Lanzamos la notificación flotante dependiendo del modo de uso
         if (method === "POST") {
           toast.success("¡Paciente registrado exitosamente!");
         } else {
@@ -90,7 +87,7 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
         }
       } else {
         setError(result.message || "Error al procesar la solicitud.");
-        toast.error(result.message || "Verifica los datos del formulario."); // Alerta visual de error rápida
+        toast.error(result.message || "Verifica los datos del formulario.");
       }
     } catch (err) {
       console.error("Error en el formulario de paciente:", err);
@@ -104,7 +101,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-lg overflow-hidden mx-4">
-        {/* Encabezado del Modal Dinámico */}
         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div>
             <h2 className="text-xl font-bold text-slate-800">
@@ -127,7 +123,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
           </button>
         </div>
 
-        {/* Formulario */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
             <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm font-medium">
@@ -135,7 +130,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
             </div>
           )}
 
-          {/* Campo: Nombre Completo */}
           <div className="space-y-1">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
               Nombre Completo
@@ -152,7 +146,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Campo: CURP */}
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
                 CURP
@@ -169,7 +162,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
               />
             </div>
 
-            {/* Campo: Género */}
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
                 Género
@@ -189,7 +181,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
             </div>
           </div>
 
-          {/* Campo: Fecha de Nacimiento */}
           <div className="space-y-1">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
               Fecha de Nacimiento
@@ -204,7 +195,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
             />
           </div>
 
-          {/* Botones de Acción */}
           <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
             <button
               type="button"

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Users, UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 import { PatientModal } from "../components/PatientModal";
-import Swal from "sweetalert2"; // <-- ¡NUEVO! Importamos SweetAlert2
-import { toast } from "sonner"; // <-- ¡NUEVO! Importamos Sonner
+import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 export const PatientsPage = () => {
   const [patients, setPatients] = useState([]);
@@ -27,7 +27,6 @@ export const PatientsPage = () => {
       });
   };
 
-  // 1. FUNCIÓN EDITAR: Extrae los datos del paciente desde la base de datos
   const handleEditClick = (id) => {
     fetch(`http://localhost:4000/api/v1/patients/${id}`)
       .then((res) => res.json())
@@ -40,20 +39,19 @@ export const PatientsPage = () => {
       .catch((error) => console.error("Error fetching single patient:", error));
   };
 
-  // 2. FUNCIÓN ELIMINAR (SOFT DELETE) CON SWEETALERT2 Y SONNER
   const handleSoftDelete = (id) => {
     Swal.fire({
       title: "¿Estás seguro?",
       text: "El paciente se marcará como inactivo en el sistema.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#1e3a8a", // Color azul-900 para mantener tu paleta de estilos
-      cancelButtonColor: "#64748b", // Color slate-500 cosmético para el botón cancelar
+      confirmButtonColor: "#1e3a8a",
+      cancelButtonColor: "#64748b",
       confirmButtonText: "Sí, inactivar",
       cancelButtonText: "Cancelar",
       background: "#ffffff",
       customClass: {
-        popup: "rounded-2xl", // Aplica bordes redondeados modernos para que haga juego con tu UI
+        popup: "rounded-2xl",
       },
     }).then((result) => {
       if (result.isConfirmed) {
@@ -68,7 +66,6 @@ export const PatientsPage = () => {
           .then((response) => {
             if (response.status === "success") {
               fetchPatients();
-              // Notificación sutil y moderna usando Sonner
               toast.success("Paciente marcado como inactivo correctamente.");
             } else {
               toast.error(response.message || "No se pudo cambiar el estatus.");
@@ -82,7 +79,6 @@ export const PatientsPage = () => {
     });
   };
 
-  // Filtrado seguro contra valores nulos o indefinidos de la BD
   const filteredPatients = patients.filter((patient) => {
     const term = searchTerm.toLowerCase();
     const fullName = patient.full_name ? patient.full_name.toLowerCase() : "";
@@ -96,7 +92,6 @@ export const PatientsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header de la sección */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
@@ -119,9 +114,7 @@ export const PatientsPage = () => {
         </button>
       </div>
 
-      {/* Contenedor Principal de la Tabla */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        {/* Barra de utilidades interna */}
         <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
           <div className="relative w-full max-w-xs">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
@@ -141,7 +134,6 @@ export const PatientsPage = () => {
           </div>
         </div>
 
-        {/* Lógica de carga / tabla */}
         {loading ? (
           <div className="p-14 text-center text-slate-500 font-medium">
             Cargando pacientes del sistema...
