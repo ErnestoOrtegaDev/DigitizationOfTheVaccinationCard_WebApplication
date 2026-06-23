@@ -20,6 +20,7 @@ import { swaggerSpec } from "./config/swagger.js";
 import authRoutes from "./routes/auth.routes.js";
 import patientRoutes from "./routes/patients.route.js";
 import userRoutes from "./routes/users.routes.js";
+import vaccineRoutes from './routes/vaccine.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -56,6 +57,8 @@ redisClient.on("error", (err) =>
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/patients", patientRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/vaccines", vaccineRoutes);
+
 app.get("/api/v1/health", async (req, res) => {
   try {
     // Uso de Sequelize para la consulta cruda de prueba

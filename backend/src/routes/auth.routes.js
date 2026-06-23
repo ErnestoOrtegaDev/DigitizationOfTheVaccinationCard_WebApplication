@@ -95,6 +95,11 @@ router.get("/me", verifyToken, (req, res) => {
   res.status(200).json({
     status: "success",
     message: "¡Tienes acceso a la zona segura!",
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role,
+    },
     userData: req.user,
   });
 });

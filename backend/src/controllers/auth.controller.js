@@ -67,8 +67,6 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Al usar findOne, Sequelize automáticamente ignorará los usuarios con status 'deleted' 
-        // gracias al defaultScope que configuramos en el modelo.
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
@@ -80,17 +78,18 @@ export const login = async (req, res) => {
             return res.status(401).json({ status: 'error', message: 'Usuario y/o Contraseña incorrectos' });
         }
 
-        // Nota: Dentro del JWT mantenemos el user.id original (entero). 
-        // Esto es seguro porque el JWT está firmado y nos permite hacer consultas rápidas 
-        // en nuestros middlewares sin tener que decodificar el Hashid cada vez.
+        // --- EL CAMBIO CLAVE ---
+        // Encriptamos el ID ANTES de meterlo al token
+        const secureId = encodeId(user.id);
+
         const accessToken = jwt.sign(
-            { id: user.id, role: user.role }, 
+            { id: secureId, role: user.role }, 
             ACCESS_TOKEN_SECRET, 
             { expiresIn: '15m' }
         );
         
         const refreshToken = jwt.sign(
-            { id: user.id }, 
+            { id: secureId }, 
             REFRESH_TOKEN_SECRET, 
             { expiresIn: '1d' }
         );
@@ -116,7 +115,7 @@ export const login = async (req, res) => {
             status: 'success', 
             message: 'Autenticación exitosa',
             user: { 
-                id: encodeId(user.id),  
+                id: secureId,  
                 email: user.email, 
                 role: user.role 
             }

@@ -3,17 +3,40 @@ import { encodeId, decodeId } from "../utils/hashids.js";
 
 export const createPatient = async (req, res) => {
   try {
-    const { user_id, curp, full_name, birth_date, gender } = req.body;
+    const { curp, full_name, birth_date, gender } = req.body;
+    const rawUserId = req.body.user_id || req.user?.id;
 
-    if (!user_id || !curp || !full_name || !birth_date || !gender) {
+    if (!curp || !full_name || !birth_date || !gender) {
       return res.status(400).json({
         status: "error",
         message: "Todos los campos son obligatorios.",
       });
     }
 
+    if (!rawUserId) {
+      return res.status(400).json({
+        status: "error",
+        message: "No se pudo identificar al usuario autenticado.",
+      });
+    }
+
+    let decodedUserId = null;
+
+    if (typeof rawUserId === "number" || /^\d+$/.test(String(rawUserId))) {
+      decodedUserId = Number(rawUserId);
+    } else {
+      decodedUserId = decodeId(rawUserId);
+    }
+
+    if (!decodedUserId) {
+      return res.status(400).json({
+        status: "error",
+        message: "El identificador de usuario (user_id) no es válido.",
+      });
+    }
+
     const newPatient = await Patient.create({
-      user_id,
+      user_id: decodedUserId,
       curp,
       full_name,
       birth_date,
@@ -25,6 +48,7 @@ export const createPatient = async (req, res) => {
       message: "Paciente registrado exitosamente.",
       data: {
         patientId: encodeId(newPatient.id),
+        userId: rawUserId,
       },
     });
   } catch (error) {
@@ -40,6 +64,8 @@ export const createPatient = async (req, res) => {
         message: error.errors[0].message,
       });
     }
+    
+    console.error('[Patient Controller] Error al crear paciente:', error);
     res.status(500).json({
       status: "error",
       message: "Error al crear el paciente.",
@@ -50,10 +76,25 @@ export const createPatient = async (req, res) => {
 
 export const getPatientsByCreator = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const rawUserId = req.params.userId || req.user?.id;
+
+    let decodedUserId = null;
+
+    if (typeof rawUserId === "number" || /^\d+$/.test(String(rawUserId))) {
+      decodedUserId = Number(rawUserId);
+    } else {
+      decodedUserId = decodeId(rawUserId);
+    }
+
+    if (!decodedUserId) {
+      return res.status(400).json({
+        status: "error",
+        message: "El identificador de usuario no es válido.",
+      });
+    }
 
     const patients = await Patient.findAll({
-      where: { user_id: userId, status: "active" },
+      where: { user_id: decodedUserId, status: "active" },
     });
 
     const obfuscatedPatients = patients.map((p) => {
@@ -192,10 +233,25 @@ export const deletePatient = async (req, res) => {
 
 export const getAllPatientsByCreator = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const rawUserId = req.params.userId || req.user?.id;
+
+    let decodedUserId = null;
+
+    if (typeof rawUserId === "number" || /^\d+$/.test(String(rawUserId))) {
+      decodedUserId = Number(rawUserId);
+    } else {
+      decodedUserId = decodeId(rawUserId);
+    }
+
+    if (!decodedUserId) {
+      return res.status(400).json({
+        status: "error",
+        message: "El identificador de usuario no es válido.",
+      });
+    }
 
     const patients = await Patient.findAll({
-      where: { user_id: userId },
+      where: { user_id: decodedUserId },
     });
 
     const obfuscatedPatients = patients.map((p) => {

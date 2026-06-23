@@ -5,12 +5,13 @@
  */
 
 import jwt from 'jsonwebtoken';
+import User from '../models/user.model.js';
+import { decodeId } from '../utils/hashids.js';
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
     try {
-        // Extraer el token de la cookie segura o del header de Autorización
         let token = req.cookies.jwt_access;
 
         if (!token) {
@@ -20,7 +21,6 @@ export const verifyToken = (req, res, next) => {
             }
         }
 
-        // Si no hay token en ningún lado, rechazar petición
         if (!token) {
             return res.status(401).json({ 
                 status: 'error', 
@@ -28,13 +28,35 @@ export const verifyToken = (req, res, next) => {
             });
         }
 
-        // Verificar y decodificar el token
         const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+        let userId = decoded.id;
 
-        // Adjuntar la información del usuario a la petición para que el controlador pueda usarla
-        req.user = decoded;
+        if (typeof userId === 'string' && !/^\d+$/.test(userId)) {
+            const decodedId = decodeId(userId);
+            if (decodedId) {
+                userId = decodedId;
+            }
+        }
 
-        // Ceder el control al siguiente middleware o controlador
+        let userRecord = null;
+        if (userId) {
+            userRecord = await User.findByPk(Number(userId), {
+                attributes: ['id', 'email', 'role']
+            });
+        }
+
+        req.user = userRecord
+            ? {
+                id: userRecord.id,
+                email: userRecord.email,
+                role: userRecord.role,
+            }
+            : {
+                ...decoded,
+                id: decoded.id,
+                role: decoded.role ?? 'citizen',
+            };
+
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
@@ -43,7 +65,7 @@ export const verifyToken = (req, res, next) => {
                 message: 'Sesion expirada. Por favor, inicia sesión nuevamente.' 
             });
         }
-        
+
         return res.status(403).json({ 
             status: 'error', 
             message: 'Token inválido o corrupto.' 
