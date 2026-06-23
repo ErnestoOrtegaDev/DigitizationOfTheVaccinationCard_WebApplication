@@ -69,7 +69,7 @@ export const updateUser = async (req, res) => {
         if (!decodedId) {
             return res.status(400).json({
                 status: 'error',
-                message: 'El identificador de usuario proporcionado no es válido.'
+                message: 'El identificador de usuario proporcionado no es válido'
             });
         }
 
@@ -78,7 +78,7 @@ export const updateUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ 
                 status: 'error', 
-                message: 'El usuario solicitado no existe o no fue encontrado.' 
+                message: 'Usuario no disponible' 
             });
         }
 
@@ -116,7 +116,7 @@ export const softDeleteUser = async (req, res) => {
         if (!decodedId) {
             return res.status(400).json({
                 status: 'error',
-                message: 'El identificador de usuario proporcionado no es válido.'
+                message: ' Usuario no disponible'
             });
         }
 
@@ -125,7 +125,7 @@ export const softDeleteUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ 
                 status: 'error', 
-                message: 'El usuario que intenta desactivar no existe.' 
+                message: 'Usuario no disponible' 
             });
         }
 
@@ -134,7 +134,7 @@ export const softDeleteUser = async (req, res) => {
         
         return res.status(200).json({ 
             status: 'success', 
-            message: 'El usuario ha sido desactivado del sistema (Borrado Lógico) correctamente.' 
+            message: 'El usuario ha sido borrado correctamente' 
         });
     } catch (error) {
         console.error('[User Controller] Error en softDeleteUser:', error);
@@ -143,4 +143,46 @@ export const softDeleteUser = async (req, res) => {
             message: 'Error interno en el servidor al procesar el borrado lógico.' 
         });
     }
+};
+export const getActiveUsers = async (req, res) => {
+    try {
+        // Consultar los usuarios con estatus activo
+        const activeUsers = await User.findAll({
+            where: { status: 'active' }
+        });
+
+        // Si la lista está vacía, responder con mensaje
+        if (!activeUsers || activeUsers.length === 0) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Usuario no disponible'
+            });
+        }
+
+        // Enmascarar los IDs antes de enviarlos
+        const formattedUsers = activeUsers.map(user => ({
+            id: encodeId(user.id),
+            email: user.email,
+            role: user.role,
+            status: user.status
+        }));
+
+        return res.status(200).json({
+            status: 'success',
+            data: formattedUsers
+        });
+    } catch (error) {
+        console.error('[User Controller] Error en getActiveUsers:', error);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Ocurrió un error al consultar los usuarios'
+        });
+    }
+};
+
+export default {
+    createUserWithDefaultPassword,
+    updateUser,
+    softDeleteUser,
+    getActiveUsers
 };
