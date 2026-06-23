@@ -1,4 +1,5 @@
 import Patient from "../models/patients.model.js";
+import { encodeId, decodeId } from "../utils/hashids.js";
 
 export const createPatient = async (req, res) => {
   try {
@@ -11,8 +12,7 @@ export const createPatient = async (req, res) => {
       });
     }
 
-    // Nota: Eliminamos el check manual de longitud de CURP. Ahora lo maneja el modelo.
-
+    // El user_id llega como entero (gracias al JWT). Lo dejamos pasar directo.
     const newPatient = await Patient.create({
       user_id,
       curp,
@@ -24,7 +24,9 @@ export const createPatient = async (req, res) => {
     res.status(201).json({
       status: "success",
       message: "Paciente registrado exitosamente.",
-      data: { patientId: newPatient.id },
+      data: {
+        patientId: encodeId(newPatient.id), // Enmascaramos el ID del paciente creado
+      },
     });
   } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") {
@@ -33,7 +35,6 @@ export const createPatient = async (req, res) => {
         message: "El CURP ya se encuentra registrado.",
       });
     }
-    // Optimización: Atrapamos errores de formato o validación del modelo
     if (error.name === "SequelizeValidationError") {
       return res.status(400).json({
         status: "error",
@@ -50,11 +51,21 @@ export const createPatient = async (req, res) => {
 
 export const getPatientsByCreator = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.params; // Llega el número entero (ej. 1) desde el JWT
+
     const patients = await Patient.findAll({
       where: { user_id: userId, status: "active" },
     });
-    res.status(200).json({ status: "success", data: patients });
+
+    // Transformamos los IDs de los pacientes para el frontend
+    const obfuscatedPatients = patients.map((p) => {
+      const data = p.toJSON();
+      data.id = encodeId(data.id); // El ID del paciente pasa a Hash
+      data.user_id = encodeId(data.user_id); // El ID del creador pasa a Hash en el JSON de salida
+      return data;
+    });
+
+    res.status(200).json({ status: "success", data: obfuscatedPatients });
   } catch (error) {
     res.status(500).json({
       status: "error",
@@ -66,15 +77,28 @@ export const getPatientsByCreator = async (req, res) => {
 
 export const getPatientById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const patient = await Patient.findByPk(id);
+    const { id } = req.params; // Aquí sí llega el HASH del paciente desde la URL
+    const realPatientId = decodeId(id);
+
+    if (!realPatientId) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "ID de paciente no válido." });
+    }
+
+    const patient = await Patient.findByPk(realPatientId);
 
     if (!patient) {
       return res
         .status(404)
         .json({ status: "error", message: "Paciente no encontrado." });
     }
-    res.status(200).json({ status: "success", data: patient });
+
+    const data = patient.toJSON();
+    data.id = encodeId(data.id);
+    data.user_id = encodeId(data.user_id);
+
+    res.status(200).json({ status: "success", data: data });
   } catch (error) {
     res.status(500).json({
       status: "error",
@@ -86,12 +110,19 @@ export const getPatientById = async (req, res) => {
 
 export const updatePatient = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // Llega el HASH del paciente
     const { curp, full_name, birth_date, gender, status } = req.body;
+    const realPatientId = decodeId(id);
+
+    if (!realPatientId) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "ID de paciente no válido." });
+    }
 
     const [updatedRows] = await Patient.update(
       { curp, full_name, birth_date, gender, status },
-      { where: { id } },
+      { where: { id: realPatientId } },
     );
 
     if (updatedRows === 0) {
@@ -112,7 +143,6 @@ export const updatePatient = async (req, res) => {
         message: "El CURP ya está siendo usado por otro paciente.",
       });
     }
-    // Optimización: Atrapamos errores de formato o validación en actualizaciones
     if (error.name === "SequelizeValidationError") {
       return res.status(400).json({
         status: "error",
@@ -129,11 +159,18 @@ export const updatePatient = async (req, res) => {
 
 export const deletePatient = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // Llega el HASH del paciente
+    const realPatientId = decodeId(id);
+
+    if (!realPatientId) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "ID de paciente no válido." });
+    }
 
     const [updatedRows] = await Patient.update(
       { status: "inactive" },
-      { where: { id } },
+      { where: { id: realPatientId } },
     );
 
     if (updatedRows === 0) {
@@ -157,13 +194,20 @@ export const deletePatient = async (req, res) => {
 
 export const getAllPatientsByCreator = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.params; // Llega entero '1' desde la URL
 
     const patients = await Patient.findAll({
       where: { user_id: userId },
     });
 
-    res.status(200).json({ status: "success", data: patients });
+    const obfuscatedPatients = patients.map((p) => {
+      const data = p.toJSON();
+      data.id = encodeId(data.id); // Enmascaramos el ID del paciente para el JSON de respuesta
+      data.user_id = encodeId(data.user_id);
+      return data;
+    });
+
+    res.status(200).json({ status: "success", data: obfuscatedPatients });
   } catch (error) {
     res.status(500).json({
       status: "error",
