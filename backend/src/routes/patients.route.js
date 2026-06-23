@@ -7,7 +7,7 @@ import {
   deletePatient,
   getAllPatientsByCreator,
 } from "../controllers/patient.controller.js";
-import { verifyToken } from "../middlewares/auth.middleware.js";
+import { requireRole, verifyToken } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -72,7 +72,7 @@ const router = express.Router();
  *       '500':
  *         description: Error interno del servidor
  */
-router.get("/:id", verifyToken, getPatientById);
+router.get("/:id", verifyToken, requireRole("admin", "nurse"), getPatientById);
 
 /**
  * @swagger
@@ -230,7 +230,5 @@ router.put("/:id", verifyToken, updatePatient);
  *         description: Error interno del servidor
  */
 router.delete("/:id", verifyToken, deletePatient);
-
-
 
 export default router;
