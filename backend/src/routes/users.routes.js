@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.get("/active", getActiveUsers);
+router.get("/", getActiveUsers);
 
 router.post("/", createUserWithDefaultPassword);
 router.put("/:id", updateUser);
