@@ -1,6 +1,7 @@
 import express from "express";
 import { register, login, logout } from "../controllers/auth.controller.js";
 import { verifyToken, requireRole } from "../middlewares/auth.middleware.js";
+import { encodeId } from "../utils/hashids.js";
 
 const router = express.Router();
 
@@ -92,15 +93,20 @@ router.post("/logout", logout);
  *         description: Datos obtenidos correctamente
  */
 router.get("/me", verifyToken, (req, res) => {
+  const normalizedUser = {
+    id: encodeId(req.user.id),
+    email: req.user.email,
+    role: req.user.role,
+  };
+
   res.status(200).json({
     status: "success",
     message: "¡Tienes acceso a la zona segura!",
-    user: {
-      id: req.user.id,
-      email: req.user.email,
-      role: req.user.role,
+    user: normalizedUser,
+    userData: {
+      ...req.user,
+      id: normalizedUser.id,
     },
-    userData: req.user,
   });
 });
 

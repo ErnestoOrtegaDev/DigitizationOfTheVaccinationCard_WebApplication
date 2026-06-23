@@ -1,10 +1,23 @@
 import Patient from "../models/patients.model.js";
 import { encodeId, decodeId } from "../utils/hashids.js";
 
+const normalizeUserId = (value) => {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  if (typeof value === "number" || /^\d+$/.test(String(value))) {
+    return Number(value);
+  }
+
+  return decodeId(value);
+};
+
 export const createPatient = async (req, res) => {
   try {
     const { curp, full_name, birth_date, gender } = req.body;
     const rawUserId = req.body.user_id || req.user?.id;
+    const decodedUserId = normalizeUserId(rawUserId);
 
     if (!curp || !full_name || !birth_date || !gender) {
       return res.status(400).json({
@@ -18,14 +31,6 @@ export const createPatient = async (req, res) => {
         status: "error",
         message: "No se pudo identificar al usuario autenticado.",
       });
-    }
-
-    let decodedUserId = null;
-
-    if (typeof rawUserId === "number" || /^\d+$/.test(String(rawUserId))) {
-      decodedUserId = Number(rawUserId);
-    } else {
-      decodedUserId = decodeId(rawUserId);
     }
 
     if (!decodedUserId) {
@@ -77,14 +82,7 @@ export const createPatient = async (req, res) => {
 export const getPatientsByCreator = async (req, res) => {
   try {
     const rawUserId = req.params.userId || req.user?.id;
-
-    let decodedUserId = null;
-
-    if (typeof rawUserId === "number" || /^\d+$/.test(String(rawUserId))) {
-      decodedUserId = Number(rawUserId);
-    } else {
-      decodedUserId = decodeId(rawUserId);
-    }
+    const decodedUserId = normalizeUserId(rawUserId);
 
     if (!decodedUserId) {
       return res.status(400).json({
@@ -234,14 +232,7 @@ export const deletePatient = async (req, res) => {
 export const getAllPatientsByCreator = async (req, res) => {
   try {
     const rawUserId = req.params.userId || req.user?.id;
-
-    let decodedUserId = null;
-
-    if (typeof rawUserId === "number" || /^\d+$/.test(String(rawUserId))) {
-      decodedUserId = Number(rawUserId);
-    } else {
-      decodedUserId = decodeId(rawUserId);
-    }
+    const decodedUserId = normalizeUserId(rawUserId);
 
     if (!decodedUserId) {
       return res.status(400).json({
