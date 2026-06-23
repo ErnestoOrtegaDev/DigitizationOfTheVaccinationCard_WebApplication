@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
+import { useAuthStore } from "../store/authStore";
 
 export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
 
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const currentUser = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (patientData) {
@@ -65,12 +67,13 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // <-- ¡CRÍTICO! Esto envía la cookie con el JWT al backend
         body: JSON.stringify({
           full_name: formData.full_name,
           curp: formData.curp,
           gender: formData.gender,
           birth_date: formData.birth_date,
-          user_id: 1,
+          ...(method === "POST" && currentUser?.id ? { user_id: currentUser.id } : {}),
         }),
       });
 
@@ -97,7 +100,6 @@ export const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
       setSubmitting(false);
     }
   };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-lg overflow-hidden mx-4">

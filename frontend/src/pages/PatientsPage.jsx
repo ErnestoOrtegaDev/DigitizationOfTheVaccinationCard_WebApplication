@@ -3,6 +3,7 @@ import { Users, UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 import { PatientModal } from "../components/PatientModal";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
+import { useAuthStore } from "../store/authStore";
 
 export const PatientsPage = () => {
   const [patients, setPatients] = useState([]);
@@ -10,10 +11,14 @@ export const PatientsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const currentUser = useAuthStore((state) => state.user);
 
   const fetchPatients = () => {
     setLoading(true);
-    fetch("http://localhost:4000/api/v1/patients/user/1")
+    const targetUserId = currentUser?.id || "1";
+    fetch(`http://localhost:4000/api/v1/patients/user/${targetUserId}`, {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((response) => {
         if (response.status === "success") {
@@ -28,7 +33,9 @@ export const PatientsPage = () => {
   };
 
   const handleEditClick = (id) => {
-    fetch(`http://localhost:4000/api/v1/patients/${id}`)
+    fetch(`http://localhost:4000/api/v1/patients/${id}`, {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((response) => {
         if (response.status === "success") {
@@ -56,10 +63,11 @@ export const PatientsPage = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         fetch(`http://localhost:4000/api/v1/patients/${id}`, {
-          method: "PATCH",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({ status: "inactive" }),
         })
           .then((res) => res.json())
@@ -88,7 +96,7 @@ export const PatientsPage = () => {
 
   useEffect(() => {
     fetchPatients();
-  }, []);
+  }, [currentUser?.id]);
 
   return (
     <div className="space-y-6">

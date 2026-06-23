@@ -9,8 +9,14 @@ export const useAuthStore = create((set, get) => ({
 
     // Acción: Iniciar sesión (recibe los datos del backend)
     login: (userData) => {
+        const normalizedUser = {
+            id: userData?.id ?? null,
+            email: userData?.email ?? null,
+            role: userData?.role ?? 'citizen',
+        };
+
         set({
-            user: userData,
+            user: normalizedUser,
             isAuthenticated: true,
             isLoading: false,
             isChecking: false
@@ -39,15 +45,22 @@ export const useAuthStore = create((set, get) => ({
     // Acción: Verificar si hay sesión activa (para cuando el usuario recarga la pestaña con F5)
     checkAuth: async () => {
         try {
-            // El backend debe tener un endpoint /auth/me que lea la cookie httpOnly y devuelva el usuario
             const response = await axios.get('/auth/me');
+            const normalizedUser = response.data.user ?? response.data.userData ?? null;
+            const safeUser = normalizedUser
+                ? {
+                    id: normalizedUser.id ?? null,
+                    email: normalizedUser.email ?? null,
+                    role: normalizedUser.role ?? 'citizen',
+                }
+                : null;
+
             set({
-                user: response.data.user,
-                isAuthenticated: true,
+                user: safeUser,
+                isAuthenticated: Boolean(safeUser),
                 isChecking: false
             });
         } catch (error) {
-            // Si da error (no hay cookie o expiró), limpiamos el estado
             set({
                 user: null,
                 isAuthenticated: false,
