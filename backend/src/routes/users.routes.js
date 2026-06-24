@@ -6,14 +6,13 @@ import {
     getActiveUsers
 } from "../controllers/user.controller.js";
 
-// 1. Importamos tus middlewares reales
-import { requireAuth } from "../middlewares/auth.middleware.js"; 
-import { requireRole } from "../middlewares/role.middleware.js"; 
+// 1. Importamos tus middlewares reales con la carpeta y nombres correctos
+import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 // 2. Aplicamos tu autenticación de forma global para todo el archivo
-router.use(requireAuth);
+router.use(protect);
 
 /**
  * @swagger
@@ -25,8 +24,8 @@ router.use(requireAuth);
  * '200':
  * description: Lista de usuarios activos
  */
-// 3. Protegemos cada endpoint con tu requireRole
-router.get("/active", requireRole('admin'), getActiveUsers);
+// 3. Protegemos cada endpoint con tu función real authorizeRoles
+router.get("/active", authorizeRoles('admin'), getActiveUsers);
 
 /**
  * @swagger
@@ -35,7 +34,7 @@ router.get("/active", requireRole('admin'), getActiveUsers);
  * summary: Crea un nuevo usuario con contraseña temporal si no se proporciona
  * tags: [Usuarios]
  */
-router.post("/", requireRole('admin'), createUserWithDefaultPassword);
+router.post("/", authorizeRoles('admin'), createUserWithDefaultPassword);
 
 /**
  * @swagger
@@ -44,7 +43,7 @@ router.post("/", requireRole('admin'), createUserWithDefaultPassword);
  * summary: Actualiza los datos de un usuario
  * tags: [Usuarios]
  */
-router.put("/:id", requireRole('admin'), updateUser);
+router.put("/:id", authorizeRoles('admin'), updateUser);
 
 /**
  * @swagger
@@ -53,6 +52,6 @@ router.put("/:id", requireRole('admin'), updateUser);
  * summary: Elimina lógicamente un usuario
  * tags: [Usuarios]
  */
-router.delete("/delete/:id", requireRole('admin'), softDeleteUser);
+router.delete("/delete/:id", authorizeRoles('admin'), softDeleteUser);
 
 export default router;
