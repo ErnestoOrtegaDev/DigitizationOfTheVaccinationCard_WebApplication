@@ -28,11 +28,10 @@ export const UsersPage = () => {
   };
 
  // 2. Crear nuevo usuario 
- // 2. Crear nuevo usuario (Con validación estricta de formato de correo)
   const handleCreateUser = async () => {
     Swal.fire({
       title: "Crear Nuevo Usuario",
-      text: "Se creará un usuario con contraseña por defecto.",
+      text: "Se creará un usuario con contraseña por defecto encriptada.",
       input: "email",
       inputPlaceholder: "Ingresa el correo electrónico",
       showCancelButton: true,
@@ -45,7 +44,6 @@ export const UsersPage = () => {
         if (!value) {
           return "¡El correo electrónico es obligatorio!";
         }
-        // Expresión regular para validar formato de correo real
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
           return "¡Por favor ingresa un formato de correo válido (ejemplo@dominio.com)!";
@@ -54,19 +52,46 @@ export const UsersPage = () => {
     }).then(async (result) => {
       if (result.isConfirmed && result.value) {
         try {
-          await axios.post("/users", { 
+          // 1. Guardamos la respuesta que envía el servidor
+          const response = await axios.post("/users", { 
             email: result.value,
             role: "citizen" 
           });
-          toast.success("Usuario creado con contraseña temporal.");
+
+          // 2. Extraemos la contraseña temporal que viene del backend
+          const passwordCreada = response.data.defaultPassword || "VacunApp2026";
+
+          // 3. Mostramos una alerta de éxito con los accesos limpios para copiar
+          Swal.fire({
+            title: "¡Usuario Creado Exitosamente!",
+            html: `
+              <div style="text-align: left; font-size: 14px; color: #334155; line-height: 1.6;">
+                <p>La cuenta se ha registrado y encriptado correctamente.</p>
+                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; margin-top: 10px;">
+                  <p style="margin: 0;"><strong>Usuario:</strong> <span style="color: #0f172a;">${result.value}</span></p>
+                  <p style="margin: 4px 0 0 0;"><strong>Contraseña Temporal:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #1e3a8a;">${passwordCreada}</code></p>
+                </div>
+                <p style="color: #64748b; margin-top: 12px; font-size: 12px; text-align: center;"> Copia estos datos y compártelos con el usuario para que pueda iniciar sesión.</p>
+              </div>
+            `,
+            icon: "success",
+            confirmButtonColor: "#1e3a8a",
+            customClass: { popup: "rounded-2xl" }
+          });
+
           fetchUsers();
         } catch (error) {
           console.error("Error al crear usuario:", error);
-          toast.error("Error al crear el usuario administrativo.");
+          if (error.response && error.response.status === 409) {
+            toast.error("Este correo ya está registrado.");
+          } else {
+            toast.error("Error al crear el usuario administrativo.");
+          }
         }
       }
     });
   };
+
   // 3. Editar rol de usuario
   const handleEditUser = async (user) => {
     Swal.fire({
