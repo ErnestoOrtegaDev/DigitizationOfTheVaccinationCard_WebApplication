@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { 
     LayoutDashboard, Users, Syringe, Calendar, 
-    Bell, Search, LogOut, Menu, ShieldAlert 
+    Bell, Search, LogOut, Menu, ShieldAlert, X 
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 
@@ -10,8 +11,8 @@ export const DashboardLayout = () => {
     const { user, logout } = useAuthStore();
     const location = useLocation();
     const navigate = useNavigate(); 
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Menú de navegación adaptable a VacunApp
     const menuItems = [
         { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/patients', icon: Users, label: 'Pacientes' },
@@ -21,8 +22,8 @@ export const DashboardLayout = () => {
         { path: '/users', icon: Users, label: 'Usuarios'},
     ];
 
-    // --- NUEVA FUNCIÓN PARA CONFIRMAR LOGOUT ---
     const handleLogoutClick = () => {
+        setIsMobileMenuOpen(false); // Cierra el menú móvil al hacer clic
         Swal.fire({
             title: '¿Cerrar sesión?',
             text: "¿Estas seguro que quieres cerrar sesión?",
@@ -38,21 +39,36 @@ export const DashboardLayout = () => {
             }
         }).then(async (result) => {
             if (result.isConfirmed) {
-                // Ejecutamos la acción de Zustand para limpiar cookies y BD
                 await logout();
-                // Redirigimos a la pantalla de login
                 navigate('/login');
             }
         });
     };
 
     return (
-        <div className="min-h-screen bg-slate-100 flex">
+        <div className="min-h-screen bg-slate-100 flex relative">
             
-            {/* SIDEBAR (Barra Lateral) */}
-            <aside className="w-64 bg-white shadow-xl hidden md:flex flex-col z-20">
+            {/* OVERLAY FONDO OSCURO PARA MÓVIL */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-slate-900/50 z-40 md:hidden transition-opacity"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
+            {/* SIDEBAR (Barra Lateral) - Ahora con clases dinámicas para móvil */}
+            <aside className={`fixed inset-y-0 left-0 w-64 bg-white shadow-xl flex flex-col z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                
+                {/* Botón cerrar para móvil */}
+                <button 
+                    className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg md:hidden"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                >
+                    <X size={20} />
+                </button>
+
                 {/* Perfil del Usuario */}
-                <div className="p-6 border-b border-slate-100 flex flex-col items-center">
+                <div className="p-6 border-b border-slate-100 flex flex-col items-center mt-6 md:mt-0">
                     <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-primary font-bold text-2xl mb-3 shadow-inner">
                         {user?.email?.charAt(0).toUpperCase() || 'U'}
                     </div>
@@ -65,7 +81,7 @@ export const DashboardLayout = () => {
                 </div>
 
                 {/* Navegación */}
-                <nav className="flex-1 py-4">
+                <nav className="flex-1 py-4 overflow-y-auto">
                     <ul className="space-y-1">
                         {menuItems.map((item) => {
                             const Icon = item.icon;
@@ -74,6 +90,7 @@ export const DashboardLayout = () => {
                                 <li key={item.path}>
                                     <Link 
                                         to={item.path}
+                                        onClick={() => setIsMobileMenuOpen(false)} // Cierra el menú al navegar
                                         className={`flex items-center gap-4 px-6 py-3 font-medium transition-colors border-l-4 ${
                                             isActive 
                                             ? 'border-primary text-primary bg-blue-50' 
@@ -92,7 +109,7 @@ export const DashboardLayout = () => {
                 {/* Botón Salir */}
                 <div className="p-4 border-t border-slate-100">
                     <button 
-                        onClick={handleLogoutClick} // Cambiamos 'logout' directo por nuestra función
+                        onClick={handleLogoutClick}
                         className="flex items-center gap-3 w-full px-4 py-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium"
                     >
                         <LogOut size={20} />
@@ -102,12 +119,15 @@ export const DashboardLayout = () => {
             </aside>
 
             {/* CONTENIDO PRINCIPAL */}
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
                 
                 {/* TOPBAR (Barra Superior Azul) */}
-                <header className="bg-primary text-white h-16 flex items-center justify-between px-6 shadow-md z-10">
+                <header className="bg-primary text-white h-16 shrink-0 flex items-center justify-between px-6 shadow-md z-10">
                     <div className="flex items-center gap-4">
-                        <button className="md:hidden p-2 hover:bg-blue-800 rounded-lg">
+                        <button 
+                            className="md:hidden p-2 hover:bg-blue-800 rounded-lg transition-colors"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                        >
                             <Menu size={24} />
                         </button>
                         <h2 className="text-xl font-bold tracking-wide">VacunApp MX</h2>
@@ -126,7 +146,7 @@ export const DashboardLayout = () => {
 
                 {/* ÁREA DINÁMICA DE LAS PÁGINAS */}
                 <main className="flex-1 p-6 overflow-y-auto">
-                    <Outlet /> {/* Aquí se inyectará el Dashboard, Pacientes, etc. */}
+                    <Outlet />
                 </main>
             </div>
         </div>
