@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Users, UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
-import axios from "../api/axios.js"; // Usamos la instancia correcta sin alterar nada
-import { useAuthStore } from "../store/authStore";
+import axios from "./src/api/axios.js"; 
+import { useAuthStore } from "./src/store/authStore";
 
 export const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -11,13 +11,13 @@ export const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const currentUser = useAuthStore((state) => state.user);
 
-  // 1. Obtener todos los usuarios activos
+  // 1. Obtener todos los usuarios activos (Sincronizado con tu router.get("/"))
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Consume la ruta protegida que corregimos en tu archivo routes
-      const response = await axios.get("/users/active");
-      // Se adapta al formato estándar de tu backend
+      // 🔽 Modificado para que llame a la ruta raíz "/" de usuarios en tu backend
+      const response = await axios.get("/users");
+      
       if (response.data.status === "success" || response.data) {
         setUsers(response.data.data || response.data || []);
       }
@@ -29,7 +29,7 @@ export const UsersPage = () => {
     }
   };
 
-  // 2. Crear o simular nuevo registro de usuario administrador
+  // 2. Crear nuevo usuario (Sincronizado con tu router.post("/"))
   const handleCreateUser = async () => {
     Swal.fire({
       title: "Crear Nuevo Usuario",
@@ -43,6 +43,7 @@ export const UsersPage = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
+          // 🔽 Llama a tu post "/"
           await axios.post("/users", { role: "citizen" });
           toast.success("Usuario creado con contraseña temporal.");
           fetchUsers();
@@ -53,7 +54,7 @@ export const UsersPage = () => {
     });
   };
 
-  // 3. Eliminar lógicamente un usuario (Soft Delete)
+  // 3. Eliminar lógicamente un usuario (Sincronizado con tu router.delete("/delete/:id"))
   const handleSoftDelete = (id) => {
     Swal.fire({
       title: "¿Inactivar Usuario?",
@@ -68,7 +69,7 @@ export const UsersPage = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // Llama a la ruta router.delete("/delete/:id") que estructuramos
+          // 🔽 Llama a tu delete exacto "/delete/:id"
           const response = await axios.delete(`/users/delete/${id}`);
           if (response.data.status === "success" || response.status === 200) {
             fetchUsers();
