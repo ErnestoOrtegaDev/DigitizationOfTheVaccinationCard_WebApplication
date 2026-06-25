@@ -27,30 +27,46 @@ export const UsersPage = () => {
     }
   };
 
-  // 2. Crear nuevo usuario
+ // 2. Crear nuevo usuario 
+ // 2. Crear nuevo usuario (Con validación estricta de formato de correo)
   const handleCreateUser = async () => {
     Swal.fire({
       title: "Crear Nuevo Usuario",
       text: "Se creará un usuario con contraseña por defecto.",
-      icon: "info",
+      input: "email",
+      inputPlaceholder: "Ingresa el correo electrónico",
       showCancelButton: true,
       confirmButtonColor: "#1e3a8a",
       cancelButtonColor: "#64748b",
       confirmButtonText: "Generar",
-      cancelButtonText: "Cancelar"
+      cancelButtonText: "Cancelar",
+      customClass: { popup: "rounded-2xl" },
+      inputValidator: (value) => {
+        if (!value) {
+          return "¡El correo electrónico es obligatorio!";
+        }
+        // Expresión regular para validar formato de correo real
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          return "¡Por favor ingresa un formato de correo válido (ejemplo@dominio.com)!";
+        }
+      }
     }).then(async (result) => {
-      if (result.isConfirmed) {
+      if (result.isConfirmed && result.value) {
         try {
-          await axios.post("/users", { role: "citizen" });
+          await axios.post("/users", { 
+            email: result.value,
+            role: "citizen" 
+          });
           toast.success("Usuario creado con contraseña temporal.");
           fetchUsers();
         } catch (error) {
+          console.error("Error al crear usuario:", error);
           toast.error("Error al crear el usuario administrativo.");
         }
       }
     });
   };
-
   // 3. Editar rol de usuario
   const handleEditUser = async (user) => {
     Swal.fire({
@@ -221,7 +237,6 @@ export const UsersPage = () => {
                     </td>
                     <td className="p-4 text-center pr-6">
                       <div className="flex items-center justify-center gap-3">
-                        {/* AQUÍ SE AGREGÓ EL EVENTO ONCLICK AL LÁPIZ */}
                         <button
                           onClick={() => handleEditUser(user)}
                           className="text-slate-400 hover:text-blue-900 transition-colors p-1.5 hover:bg-slate-100 rounded-lg"
