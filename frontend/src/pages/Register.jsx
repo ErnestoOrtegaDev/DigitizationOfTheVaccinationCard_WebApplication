@@ -22,13 +22,12 @@ export const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validación de contraseñas con SweetAlert
     if(formData.password !== formData.confirmPassword) {
       Swal.fire({
         icon: 'warning',
         title: 'Verifica tus datos',
         text: 'Las contraseñas no coinciden.',
-        confirmButtonColor: '#2563eb' // Azul secundario
+        confirmButtonColor: '#2563eb' 
       });
       return;
     }
@@ -42,7 +41,6 @@ export const Register = () => {
         role: 'citizen' 
       });
 
-      // Alerta de Éxito
       Swal.fire({
         icon: 'success',
         title: '¡Registro Exitoso!',
@@ -53,12 +51,11 @@ export const Register = () => {
 
       navigate('/login');
     } catch (err) {
-      // Alerta de Error desde el backend
       Swal.fire({
         icon: 'error',
         title: 'Error en el registro',
         text: err.response?.data?.message || 'Hubo un problema al crear tu cuenta.',
-        confirmButtonColor: '#1e3a8a' // Azul primario
+        confirmButtonColor: '#1e3a8a' 
       });
     } finally {
       setLoading(false);
@@ -66,8 +63,12 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-blue-50 px-4 py-8">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-blue-100 p-8 relative">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-900 to-blue-700 px-4 py-8 relative overflow-hidden">
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-white opacity-20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-[-10%] right-[-5%] w-80 h-80 bg-white opacity-30 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute top-[20%] right-[10%] w-48 h-48 bg-white opacity-20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      
+      <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl border border-blue-100 p-10 relative z-10">
         
         <Link to="/" className="absolute top-6 left-6 text-slate-400 hover:text-primary transition-colors">
           <ArrowLeft size={24} />
@@ -138,8 +139,6 @@ export const Register = () => {
             </div>
           </div>
 
-          {/* Aquí utilizamos nuestro nuevo componente. 
-              Usamos variant="secondary" para mantener el estilo original del registro */}
           <div className="pt-2">
             <Button type="submit" variant="secondary" isLoading={loading}>
               Registrarme

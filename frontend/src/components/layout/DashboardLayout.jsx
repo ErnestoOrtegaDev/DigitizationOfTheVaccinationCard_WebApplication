@@ -1,13 +1,15 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { 
     LayoutDashboard, Users, Syringe, Calendar, 
     Bell, Search, LogOut, Menu, ShieldAlert 
 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export const DashboardLayout = () => {
     const { user, logout } = useAuthStore();
     const location = useLocation();
+    const navigate = useNavigate(); 
 
     // Menú de navegación adaptable a VacunApp
     const menuItems = [
@@ -18,6 +20,31 @@ export const DashboardLayout = () => {
         { path: '/outbreaks', icon: ShieldAlert, label: 'Alertas Sanitarias' },
         { path: '/users', icon: Users, label: 'Usuarios'},
     ];
+
+    // --- NUEVA FUNCIÓN PARA CONFIRMAR LOGOUT ---
+    const handleLogoutClick = () => {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: "¿Estas seguro que quieres cerrar sesión?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#1e3a8a', 
+            cancelButtonColor: '#64748b', 
+            confirmButtonText: 'Sí, cerrar sesión',
+            cancelButtonText: 'Cancelar',
+            background: '#ffffff',
+            customClass: {
+                popup: 'rounded-2xl',
+            }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // Ejecutamos la acción de Zustand para limpiar cookies y BD
+                await logout();
+                // Redirigimos a la pantalla de login
+                navigate('/login');
+            }
+        });
+    };
 
     return (
         <div className="min-h-screen bg-slate-100 flex">
@@ -65,7 +92,7 @@ export const DashboardLayout = () => {
                 {/* Botón Salir */}
                 <div className="p-4 border-t border-slate-100">
                     <button 
-                        onClick={logout}
+                        onClick={handleLogoutClick} // Cambiamos 'logout' directo por nuestra función
                         className="flex items-center gap-3 w-full px-4 py-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium"
                     >
                         <LogOut size={20} />

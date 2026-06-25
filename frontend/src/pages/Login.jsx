@@ -40,19 +40,15 @@ export const Login = () => {
 
             navigate('/dashboard');
         } catch (err) {
-            // LÓGICA MEJORADA DE ERRORES
             let errorTitle = 'Error de acceso';
             let errorMessage = 'Ocurrió un error inesperado. Intenta más tarde.';
 
             if (!err.response) {
-                // El servidor está apagado o no hay internet
                 errorTitle = 'Sin conexión';
                 errorMessage = 'No pudimos conectar con el servidor. Intentalo mas tarde';
             } else if (err.response.status === 401) {
-                // El servidor respondió explícitamente que los datos están mal
                 errorMessage = 'Usuario y/o contraseña incorrectos.';
             } else {
-                // Cualquier otro error del backend (ej. 500)
                 errorMessage = err.response.data?.message || errorMessage;
             }
 
@@ -68,8 +64,12 @@ export const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-blue-50 px-4">
-            <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-blue-100 p-8 relative">
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-900 to-blue-700 px-4 relative overflow-hidden">
+            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-white opacity-20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-[-10%] right-[-5%] w-80 h-80 bg-white opacity-30 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-[20%] right-[10%] w-48 h-48 bg-white opacity-20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+            
+            <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl border border-blue-100 p-10 relative z-10">
                 <Link to="/" className="absolute top-6 left-6 text-slate-400 hover:text-primary transition-colors">
                     <ArrowLeft size={24} />
                 </Link>
