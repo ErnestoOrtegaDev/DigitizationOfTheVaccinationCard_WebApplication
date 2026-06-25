@@ -9,7 +9,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { PatientsPage } from "./pages/PatientsPage";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { UsersPage } from "../user.jsx";
+import { UsersPage } from "./pages/User.jsx";
 
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -32,7 +32,7 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/patients" element={<PatientsPage />} />
-            <Route path="/users" element={<UsersPage />} />
+            <Route path="/user" element={<UsersPage />} />
             {/* Futuras rutas privadas irán aquí */}
           </Route>
         </Route>

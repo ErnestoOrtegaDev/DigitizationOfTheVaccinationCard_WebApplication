@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Users, UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
-import axios from "./src/api/axios.js"; 
-import { useAuthStore } from "./src/store/authStore";
+import axios from "../api/axios.js"; 
+import { useAuthStore } from "../store/authStore.js";
 
 export const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -11,13 +11,11 @@ export const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const currentUser = useAuthStore((state) => state.user);
 
-  // 1. Obtener todos los usuarios activos (Sincronizado con tu router.get("/"))
+  // 1. Obtener todos los usuarios activos
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // 🔽 Modificado para que llame a la ruta raíz "/" de usuarios en tu backend
       const response = await axios.get("/users");
-      
       if (response.data.status === "success" || response.data) {
         setUsers(response.data.data || response.data || []);
       }
@@ -29,7 +27,7 @@ export const UsersPage = () => {
     }
   };
 
-  // 2. Crear nuevo usuario (Sincronizado con tu router.post("/"))
+  // 2. Crear nuevo usuario
   const handleCreateUser = async () => {
     Swal.fire({
       title: "Crear Nuevo Usuario",
@@ -43,7 +41,6 @@ export const UsersPage = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // 🔽 Llama a tu post "/"
           await axios.post("/users", { role: "citizen" });
           toast.success("Usuario creado con contraseña temporal.");
           fetchUsers();
@@ -54,7 +51,50 @@ export const UsersPage = () => {
     });
   };
 
-  // 3. Eliminar lógicamente un usuario (Sincronizado con tu router.delete("/delete/:id"))
+  // 3. Editar rol de usuario
+  const handleEditUser = async (user) => {
+    Swal.fire({
+      title: "Modificar Permisos / Rol",
+      html: `
+        <div style="text-align: left; margin-top: 10px;">
+          <label style="font-weight: 600; font-size: 14px; color: #334155;">Usuario:</label>
+          <input type="text" value="${user.email}" class="swal2-input" style="margin: 8px 0 16px 0; width: 100%; border-radius: 12px; font-size: 14px; background-color: #f8fafc;" disabled />
+          
+          <label style="font-weight: 600; font-size: 14px; color: #334155;">Asignar Rol de Accesos:</label>
+          <select id="swal-input-role" class="swal2-input" style="margin: 8px 0 0 0; width: 100%; border-radius: 12px; font-size: 14px;">
+            <option value="citizen" ${user.role === "citizen" ? "selected" : ""}>Citizen (Ciudadano)</option>
+            <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin (Administrador)</option>
+          </select>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonColor: "#1e3a8a",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Guardar Cambios",
+      cancelButtonText: "Cancelar",
+      customClass: { popup: "rounded-2xl" },
+      preConfirm: () => {
+        return document.getElementById("swal-input-role").value;
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed && result.value) {
+        try {
+          const selectedRole = result.value;
+          const response = await axios.put(`/users/${user.id}`, { role: selectedRole });
+
+          if (response.data.status === "success" || response.status === 200) {
+            toast.success("Rol de usuario actualizado con éxito.");
+            fetchUsers();
+          }
+        } catch (error) {
+          console.error("Error updating user:", error);
+          toast.error("No se pudo actualizar el rol del usuario.");
+        }
+      }
+    });
+  };
+
+  // 4. Eliminar lógicamente un usuario
   const handleSoftDelete = (id) => {
     Swal.fire({
       title: "¿Inactivar Usuario?",
@@ -69,7 +109,6 @@ export const UsersPage = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // 🔽 Llama a tu delete exacto "/delete/:id"
           const response = await axios.delete(`/users/delete/${id}`);
           if (response.data.status === "success" || response.status === 200) {
             fetchUsers();
@@ -182,7 +221,9 @@ export const UsersPage = () => {
                     </td>
                     <td className="p-4 text-center pr-6">
                       <div className="flex items-center justify-center gap-3">
+                        {/* AQUÍ SE AGREGÓ EL EVENTO ONCLICK AL LÁPIZ */}
                         <button
+                          onClick={() => handleEditUser(user)}
                           className="text-slate-400 hover:text-blue-900 transition-colors p-1.5 hover:bg-slate-100 rounded-lg"
                           title="Modificar Permisos"
                         >
