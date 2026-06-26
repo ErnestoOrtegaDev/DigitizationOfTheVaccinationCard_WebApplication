@@ -49,12 +49,12 @@ export const PatientsPage = () => {
   const handleSoftDelete = (id) => {
     Swal.fire({
       title: "¿Estás seguro?",
-      text: "El paciente se marcará como inactivo en el sistema.",
+      text: "El paciente se eliminará del sistema.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#1e3a8a",
       cancelButtonColor: "#64748b",
-      confirmButtonText: "Sí, inactivar",
+      confirmButtonText: "Sí, eliminar",
       cancelButtonText: "Cancelar",
       background: "#ffffff",
       customClass: {
@@ -74,9 +74,9 @@ export const PatientsPage = () => {
           .then((response) => {
             if (response.status === "success") {
               fetchPatients();
-              toast.success("Paciente marcado como inactivo correctamente.");
+              toast.success("Paciente eliminado correctamente.");
             } else {
-              toast.error(response.message || "No se pudo cambiar el estatus.");
+              toast.error(response.message || "No se pudo eliminar el paciente.");
             }
           })
           .catch((error) => {
