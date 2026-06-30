@@ -12,7 +12,6 @@ import morgan from "morgan";
 import sequelize from "./config/db.js";
 import cookieParser from "cookie-parser";
 
-
 import "dotenv/config";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.js";
@@ -20,7 +19,8 @@ import { swaggerSpec } from "./config/swagger.js";
 import authRoutes from "./routes/auth.routes.js";
 import patientRoutes from "./routes/patients.route.js";
 import userRoutes from "./routes/users.routes.js";
-import vaccineRoutes from './routes/vaccine.routes.js';
+import vaccineRoutes from "./routes/vaccine.routes.js";
+import healthCenterRoutes from "./routes/health_center.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -58,6 +58,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/patients", patientRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/vaccines", vaccineRoutes);
+app.use("/api/v1/health-centers", healthCenterRoutes);
 
 app.get("/api/v1/health", async (req, res) => {
   try {
