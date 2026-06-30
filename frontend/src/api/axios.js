@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import { useAuthStore } from '../store/authStore';
 
 const instance = axios.create({
-    baseURL: 'http://localhost:4000/api/v1', 
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1', 
     withCredentials: true // Permite envío de cookies
 });
 
