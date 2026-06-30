@@ -28,7 +28,7 @@ export const DashboardLayout = () => {
     { path: "/campaigns", icon: Calendar, label: "Campañas" },
     { path: "/outbreaks", icon: ShieldAlert, label: "Alertas Sanitarias" },
     { path: "/users", icon: Users, label: "Usuarios" },
-    //Agregar Centros de Salud
+    { path: "/health-centers", icon: Calendar, label: "Centros de Salud" },
   ];
 
   const handleLogoutClick = () => {
