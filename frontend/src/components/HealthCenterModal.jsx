@@ -30,7 +30,14 @@ export const HealthCenterModal = ({ isOpen, onClose, onSave, centerData }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "phone") {
+      const onlynums = value.replace(/[^0-9]/g, "");
+      if (onlynums.length > 10) return;
+      setFormData((prev) => ({ ...prev, [name]: onlynums }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e) => {
@@ -139,6 +146,9 @@ export const HealthCenterModal = ({ isOpen, onClose, onSave, centerData }) => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="10 dígitos"
+                maxLength={10}
+                pattern="[0-9]{10}"
+                title="Ingresa un número de 10 dígitos"
                 className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-900 text-slate-700 placeholder-slate-400"
               />
             </div>

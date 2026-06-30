@@ -102,23 +102,23 @@ export const updateHealthCenter = async (req, res) => {
     const { id } = req.params;
     const { name, clues, address, phone, status } = req.body;
     const realCenterId = decodeId(id);
+
     if (!realCenterId) {
       return res
         .status(400)
         .json({ status: "error", message: "ID de centro de salud no válido." });
     }
 
-    const [updatedRows] = await HealthCenter.update(
-      { name, clues, address, phone, status },
-      { where: { id: realCenterId } },
-    );
+    const center = await HealthCenter.findByPk(realCenterId);
 
-    if (updatedRows === 0) {
+    if (!center) {
       return res.status(404).json({
         status: "error",
         message: "Centro de salud no encontrado.",
       });
     }
+
+    await center.update({ name, clues, address, phone, status });
 
     res.status(200).json({
       status: "success",
