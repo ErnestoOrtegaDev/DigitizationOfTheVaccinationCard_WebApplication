@@ -20,7 +20,8 @@ import authRoutes from "./routes/auth.routes.js";
 import patientRoutes from "./routes/patients.route.js";
 import userRoutes from "./routes/users.routes.js";
 import vaccineRoutes from "./routes/vaccine.routes.js";
-import healthCenterRoutes from "./routes/health_center.routes.js";
+import healthCenterRoutes from "./routes/healthCenter.routes.js";
+import cartillaRoutes from "./routes/cartilla.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -59,6 +60,7 @@ app.use("/api/v1/patients", patientRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/vaccines", vaccineRoutes);
 app.use("/api/v1/health-centers", healthCenterRoutes);
+app.use("/api/v1/cartillas", cartillaRoutes);
 
 app.get("/api/v1/health", async (req, res) => {
   try {
@@ -132,6 +134,9 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error("[Sistema] Error crítico durante la inicialización:", error);
+    if (error && error.stack) {
+    console.error(error.stack);
+  }
     process.exit(1);
   }
 };

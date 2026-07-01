@@ -1,4 +1,4 @@
-import HealthCenter from "../models/health_center.model.js";
+import HealthCenter from "../models/healthCenter.model.js";
 import { encodeId, decodeId } from "../utils/hashids.js";
 
 export const createHealthCenter = async (req, res) => {
