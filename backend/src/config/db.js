@@ -10,6 +10,10 @@ const sequelize = new Sequelize(
     {
         host: process.env.DB_HOST || 'vacunapp-mysql',
         dialect: 'mysql',
+        define: {
+            charset: 'utf8mb4',
+            collate: 'utf8mb4_unicode_ci',
+        },
         logging: false, // Cambiar a console.log durante depuración para ver sentencias SQL
         pool: {
             max: 10,
