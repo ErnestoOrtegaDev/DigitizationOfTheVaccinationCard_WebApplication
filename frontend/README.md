@@ -1,16 +1,33 @@
-# React + Vite
+# 💻 VacunAppMX - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz de usuario para el sistema de vacunación. Construida como una Single Page Application (SPA) utilizando React, Vite para el empaquetado rápido y Zustand para el manejo global del estado.
 
-Currently, two official plugins are available:
+## 📁 Estructura de Directorios
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+*   `public/`: Archivos estáticos.
+*   `src/api/`: Configuración del cliente HTTP (`axios.js`) con interceptores para JWT.
+*   `src/assets/`: Recursos gráficos como logotipos e imágenes.
+*   `src/components/layout/`: Componentes reutilizables de la interfaz (Navbar, Botones, Tablas, Modales).
+*   `src/pages/`: Vistas principales de la aplicación (Dashboard, Login, Registro, Gestión de Pacientes y Cartillas).
+*   `src/store/`: Manejo de estado global utilizando Zustand (`authStore.js`, `cartillaStore.js`, etc.).
 
-## React Compiler
+## ✨ Tecnologías Destacadas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+*   **Vite:** Entorno de desarrollo ultra rápido.
+*   **Zustand:** Manejo del estado global de forma minimalista, evitando el renderizado excesivo.
+*   **Axios Interceptors:** Manejo automático de tokens de autorización en cada petición hacia el backend.
+*   **React Router:** Navegación dinámica y protección de rutas (`ProtectedRoute.jsx`).
+*   **Tailwind CSS:** (Asumido) Utilizado para los estilos de la interfaz garantizando un diseño responsivo y moderno.
 
-## Expanding the ESLint configuration
+## 💻 Scripts Disponibles
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+En el directorio `/frontend`, puedes ejecutar:
+
+*   `npm run dev`: Inicia el servidor de desarrollo de Vite.
+*   `npm run build`: Construye la aplicación para producción.
+*   `npm run preview`: Previsualiza el build de producción localmente.
+
+## 🔌 Variables de Entorno
+
+Define tu archivo `.env` en la raíz del frontend:
+*   `VITE_API_URL`: URL base de la API (ej. `http://localhost:4000/api/v1`).
