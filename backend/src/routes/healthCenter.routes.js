@@ -5,7 +5,7 @@ import {
   getHealthCenterById,
   updateHealthCenter,
   deleteHealthCenter,
-} from "../controllers/health_center.controller.js";
+} from "../controllers/healthCenter.controller.js";
 
 const router = Router();
 
