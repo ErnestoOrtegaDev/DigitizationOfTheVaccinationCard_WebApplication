@@ -3,31 +3,13 @@ import { Users, Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { HealthCenterModal } from "../components/HealthCenterModal";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
+import { useHealthCenterStore } from "../store/healthCenterStore";
 
 export const HealthCentersPage = () => {
-  const [centers, setCenters] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { centers, loading, fetchCenters } = useHealthCenterStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  const fetchCenters = () => {
-    setLoading(true);
-    fetch("http://localhost:4000/api/v1/health-centers", {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((response) => {
-        if (response.status === "success") {
-          setCenters(response.data || []);
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching health centers:", error);
-        setLoading(false);
-      });
-  };
 
   const handleEditClick = (id) => {
     fetch(`http://localhost:4000/api/v1/health-centers/${id}`, {

@@ -4,33 +4,14 @@ import { PatientModal } from "../components/PatientModal";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
 import { useAuthStore } from "../store/authStore";
+import { usePatientStore } from "../store/patientStore";
 
 export const PatientsPage = () => {
-  const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { patients, loading, fetchPatients } = usePatientStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const currentUser = useAuthStore((state) => state.user);
-
-  const fetchPatients = () => {
-    setLoading(true);
-    const targetUserId = currentUser?.id || "1";
-    fetch(`http://localhost:4000/api/v1/patients/user/${targetUserId}`, {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((response) => {
-        if (response.status === "success") {
-          setPatients(response.data || []);
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching patients:", error);
-        setLoading(false);
-      });
-  };
 
   const handleEditClick = (id) => {
     fetch(`http://localhost:4000/api/v1/patients/${id}`, {
@@ -73,10 +54,12 @@ export const PatientsPage = () => {
           .then((res) => res.json())
           .then((response) => {
             if (response.status === "success") {
-              fetchPatients();
+              fetchPatients(currentUser?.id || "1");
               toast.success("Paciente eliminado correctamente.");
             } else {
-              toast.error(response.message || "No se pudo eliminar el paciente.");
+              toast.error(
+                response.message || "No se pudo eliminar el paciente.",
+              );
             }
           })
           .catch((error) => {
@@ -95,7 +78,8 @@ export const PatientsPage = () => {
   });
 
   useEffect(() => {
-    fetchPatients();
+    const targetUserId = currentUser?.id || "1";
+    fetchPatients(targetUserId);
   }, [currentUser?.id]);
 
   return (
@@ -228,7 +212,7 @@ export const PatientsPage = () => {
           setIsModalOpen(false);
           setSelectedPatient(null);
         }}
-        onSave={fetchPatients}
+        onSave={() => fetchPatients(currentUser?.id || "1")}
         patientData={selectedPatient}
       />
     </div>
