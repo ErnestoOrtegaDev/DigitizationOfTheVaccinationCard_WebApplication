@@ -11,7 +11,7 @@ export const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const currentUser = useAuthStore((state) => state.user);
 
-  // 1. Obtener todos los usuarios activos
+  // Obtener todos los usuarios activos
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -27,48 +27,69 @@ export const UsersPage = () => {
     }
   };
 
- // 2. Crear nuevo usuario 
+ // Crear nuevo usuario 
   const handleCreateUser = async () => {
     Swal.fire({
       title: "Crear Nuevo Usuario",
       text: "Se creará un usuario con contraseña por defecto encriptada.",
-      input: "email",
-      inputPlaceholder: "Ingresa el correo electrónico",
+      html: `
+        <div style="text-align: left; margin-top: 10px;">
+          <label style="font-weight: 600; font-size: 14px; color: #334155;">Correo electrónico:</label>
+          <input id="swal-input-email" type="email" class="swal2-input" placeholder="Ingresa el correo electrónico" style="margin: 8px 0 16px 0; width: 100%; border-radius: 12px; font-size: 14px;" />
+
+          <label style="font-weight: 600; font-size: 14px; color: #334155;">Asignar Rol de Accesos:</label>
+          <select id="swal-input-role" class="swal2-input" style="margin: 8px 0 0 0; width: 100%; border-radius: 12px; font-size: 14px;">
+            <option value="citizen">Citizen (Ciudadano)</option>
+            <option value="nurse">Nurse (Enfermera)</option>
+            <option value="admin">Admin (Administrador)</option>
+          </select>
+        </div>
+      `,
       showCancelButton: true,
       confirmButtonColor: "#1e3a8a",
       cancelButtonColor: "#64748b",
       confirmButtonText: "Generar",
       cancelButtonText: "Cancelar",
       customClass: { popup: "rounded-2xl" },
-      inputValidator: (value) => {
-        if (!value) {
-          return "¡El correo electrónico es obligatorio!";
+      preConfirm: () => {
+        const email = document.getElementById("swal-input-email").value;
+        const role = document.getElementById("swal-input-role").value;
+
+        if (!email) {
+          Swal.showValidationMessage("¡El correo electrónico es obligatorio!");
+          return false;
         }
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-          return "¡Por favor ingresa un formato de correo válido (ejemplo@dominio.com)!";
+        if (!emailRegex.test(email)) {
+          Swal.showValidationMessage("¡Por favor ingresa un formato de correo válido (ejemplo@dominio.com)!");
+          return false;
         }
+
+        return { email, role };
       }
     }).then(async (result) => {
       if (result.isConfirmed && result.value) {
         try {
-          // 1. Guardamos la respuesta que envía el servidor
+          const { email, role } = result.value;
+
+          // Guardamos la respuesta que envía el servidor
           const response = await axios.post("/users", { 
-            email: result.value,
-            role: "citizen" 
+            email,
+            role
           });
 
-          // 2. Extraemos la contraseña temporal que viene del backend
+          // Extraemos la contraseña temporal que viene del backend
           const passwordCreada = response.data.defaultPassword || "VacunApp2026";
 
-          // 3. Mostramos una alerta de éxito con los accesos limpios para copiar
+          // Mostramos una alerta de éxito con los accesos limpios para copiar
           Swal.fire({
             title: "¡Usuario Creado Exitosamente!",
             html: `
               <div style="text-align: left; font-size: 14px; color: #334155; line-height: 1.6;">
                 <p>La cuenta se ha registrado y encriptado correctamente.</p>
                 <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; margin-top: 10px;">
-                  <p style="margin: 0;"><strong>Usuario:</strong> <span style="color: #0f172a;">${result.value}</span></p>
+                  <p style="margin: 0;"><strong>Usuario:</strong> <span style="color: #0f172a;">${email}</span></p>
                   <p style="margin: 4px 0 0 0;"><strong>Contraseña Temporal:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #1e3a8a;">${passwordCreada}</code></p>
                 </div>
                 <p style="color: #64748b; margin-top: 12px; font-size: 12px; text-align: center;"> Copia estos datos y compártelos con el usuario para que pueda iniciar sesión.</p>
@@ -92,7 +113,7 @@ export const UsersPage = () => {
     });
   };
 
-  // 3. Editar rol de usuario
+  // Editar rol de usuario
   const handleEditUser = async (user) => {
     Swal.fire({
       title: "Modificar Permisos / Rol",
@@ -103,7 +124,8 @@ export const UsersPage = () => {
           
           <label style="font-weight: 600; font-size: 14px; color: #334155;">Asignar Rol de Accesos:</label>
           <select id="swal-input-role" class="swal2-input" style="margin: 8px 0 0 0; width: 100%; border-radius: 12px; font-size: 14px;">
-            <option value="citizen" ${user.role === "citizen" ? "selected" : ""}>Citizen (Ciudadano)</option>
+            <option value="citizen" ${user.role === "citizen" || user.role === "patient" ? "selected" : ""}>Ciudadano (Citizen)</option>
+            <option value="nurse" ${user.role === "nurse" ? "selected" : ""}>Nurse (Enfermera)</option>
             <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin (Administrador)</option>
           </select>
         </div>
@@ -134,8 +156,8 @@ export const UsersPage = () => {
       }
     });
   };
-
-  // 4. Eliminar lógicamente un usuario
+  
+  // Eliminar lógicamente un usuario
   const handleSoftDelete = (id) => {
     Swal.fire({
       title: "¿Inactivar Usuario?",

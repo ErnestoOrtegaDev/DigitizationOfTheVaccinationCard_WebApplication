@@ -24,7 +24,7 @@ export const Navbar = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex gap-8 font-medium">
             <Link to="/" className="hover:text-blue-300 transition-colors">Inicio</Link>
-            <Link to="/vaccines" className="hover:text-blue-300 transition-colors">Vacunas</Link>
+            <Link to="/vaccines-panel" className="hover:text-blue-300 transition-colors">Vacunas</Link>
             <Link to="/calendar" className="hover:text-blue-300 transition-colors">Calendario</Link>
             <Link to="/centers" className="hover:text-blue-300 transition-colors">Centros</Link>
           </div>

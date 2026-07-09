@@ -5,12 +5,17 @@ import Swal from 'sweetalert2';
 import { toast } from 'sonner';
 import { useVaccineStore } from '../store/vaccineStore';
 import { VaccineModal } from '../components/VaccineModal';
+import { useAuthStore } from '../store/authStore';
 
 export const VaccinesPage = () => {
     const { vaccines, isLoading, fetchVaccines, deleteVaccine } = useVaccineStore();
+    const currentUser = useAuthStore((state) => state.user);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVaccine, setSelectedVaccine] = useState(null);
+
+    const normalizedRole = (currentUser?.role || 'citizen').toLowerCase();
+    const canManageVaccines = normalizedRole === 'admin';
 
     useEffect(() => {
         fetchVaccines();
@@ -62,13 +67,15 @@ export const VaccinesPage = () => {
                     </h1>
                     <p className="text-slate-500 mt-1 ml-14">Administra el esquema de vacunación oficial.</p>
                 </div>
-                <button
-                    onClick={() => openModal()}
-                    className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition-colors text-sm flex items-center gap-2"
-                >
-                    <Plus size={18} />
-                    <span>Nueva Vacuna</span>
-                </button>
+                {canManageVaccines && (
+                    <button
+                        onClick={() => openModal()}
+                        className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition-colors text-sm flex items-center gap-2"
+                    >
+                        <Plus size={18} />
+                        <span>Nueva Vacuna</span>
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
@@ -114,22 +121,26 @@ export const VaccinesPage = () => {
                                             </span>
                                         </td>
                                         <td className="p-4 text-center pr-6">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button 
-                                                    onClick={() => openModal(vaccine)} 
-                                                    className="text-slate-400 hover:text-blue-900 p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                                                    title="Editar Vacuna"
-                                                >
-                                                    <Pencil size={18} />
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDelete(vaccine.id)} 
-                                                    className="text-slate-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Eliminar Vacuna"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
+                                            {canManageVaccines ? (
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button 
+                                                        onClick={() => openModal(vaccine)} 
+                                                        className="text-slate-400 hover:text-blue-900 p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                                                        title="Editar Vacuna"
+                                                    >
+                                                        <Pencil size={18} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDelete(vaccine.id)} 
+                                                        className="text-slate-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Eliminar Vacuna"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-slate-400">Solo lectura</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

@@ -20,6 +20,9 @@ export const PatientsPage = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const currentUser = useAuthStore((state) => state.user);
+  const normalizedRole = (currentUser?.role || "citizen").toLowerCase();
+  const canCreatePatients = normalizedRole === "admin" || normalizedRole === "nurse" || normalizedRole === "citizen";
+  const canEditOrDeletePatients = normalizedRole === "admin" || normalizedRole === "nurse";
 
   const handleEditClick = (id) => {
     fetch(`http://localhost:4000/api/v1/patients/${id}`, {
@@ -102,16 +105,18 @@ export const PatientsPage = () => {
             Gestiona y revisa los perfiles de vacunación asignados a tu cuenta.
           </p>
         </div>
-        <button
-          onClick={() => {
-            setSelectedPatient(null);
-            setIsModalOpen(true);
-          }}
-          className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition-colors text-sm flex items-center gap-2"
-        >
-          <UserPlus size={18} />
-          <span>Nuevo Registro</span>
-        </button>
+        {canCreatePatients && (
+          <button
+            onClick={() => {
+              setSelectedPatient(null);
+              setIsModalOpen(true);
+            }}
+            className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition-colors text-sm flex items-center gap-2"
+          >
+            <UserPlus size={18} />
+            <span>Nuevo Registro</span>
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -190,20 +195,24 @@ export const PatientsPage = () => {
                     </td>
                     <td className="p-4 text-center pr-6">
                       <div className="flex items-center justify-center gap-3">
-                        <button
-                          onClick={() => handleEditClick(patient.id)}
-                          className="text-slate-400 hover:text-blue-900 transition-colors p-1.5 hover:bg-slate-100 rounded-lg"
-                          title="Editar Cartilla"
-                        >
-                          <Pencil size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleSoftDelete(patient.id)}
-                          className="text-slate-400 hover:text-red-600 transition-colors p-1.5 hover:bg-red-50 rounded-lg"
-                          title="Eliminar Paciente"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {canEditOrDeletePatients && (
+                          <>
+                            <button
+                              onClick={() => handleEditClick(patient.id)}
+                              className="text-slate-400 hover:text-blue-900 transition-colors p-1.5 hover:bg-slate-100 rounded-lg"
+                              title="Editar Cartilla"
+                            >
+                              <Pencil size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleSoftDelete(patient.id)}
+                              className="text-slate-400 hover:text-red-600 transition-colors p-1.5 hover:bg-red-50 rounded-lg"
+                              title="Eliminar Paciente"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        )}
                         <Link
                           to={`/cartilla/${patient.id}`}
                           className="text-slate-400 hover:text-blue-900 p-2 hover:bg-slate-100 rounded-lg transition-colors"

@@ -9,6 +9,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { PatientsPage } from "./pages/PatientsPage";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { RoleRoute } from "./components/RoleRoute";
 import { UsersPage } from "./pages/User.jsx";
 import { HealthCentersPage } from "./pages/HealthCentersPage";
 import { VaccinesPage } from "./pages/VaccinesPage.jsx";
@@ -35,10 +36,14 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/patients" element={<PatientsPage />} />
-            <Route path="/user" element={<UsersPage />} />
-            <Route path="/users" element={<UsersPage />} />
+            <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+              <Route path="/user" element={<UsersPage />} />
+              <Route path="/users" element={<UsersPage />} />
+            </Route>
             <Route path="/health-centers" element={<HealthCentersPage />} />
-            <Route path="/vaccines" element={<VaccinesPage/>}/>
+            <Route element={<RoleRoute allowedRoles={["admin", "nurse"]} />}>
+              <Route path="/vaccines" element={<VaccinesPage />} />
+            </Route>
             <Route path="/cartilla/:patientId" element={<CartillaPage />} />
             {/* Futuras rutas privadas irán aquí */}
           </Route>

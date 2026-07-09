@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   ShieldAlert,
+  Building,
   X,
 } from "lucide-react";
 import Swal from "sweetalert2";
@@ -21,14 +22,28 @@ export const DashboardLayout = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const normalizedRole = (user?.role || "citizen").toLowerCase();
+  const isAdmin = normalizedRole === "admin";
+  const isNurse = normalizedRole === "nurse";
+  const isCitizen = normalizedRole === "citizen";
+  const isPatient = normalizedRole === "citizen" || normalizedRole === "patient";
+
   const menuItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/patients", icon: Users, label: "Pacientes" },
-    { path: "/vaccines", icon: Syringe, label: "Vacunas" },
-    { path: "/campaigns", icon: Calendar, label: "Campañas" },
-    { path: "/outbreaks", icon: ShieldAlert, label: "Alertas Sanitarias" },
-    { path: "/users", icon: Users, label: "Usuarios" },
-    { path: "/health-centers", icon: Calendar, label: "Centros de Salud" },
+    ...(isAdmin || isNurse
+      ? [{ path: "/vaccines", icon: Syringe, label: "Vacunas" }]
+      : []),
+    ...(isAdmin || isNurse || isCitizen
+      ? [{ path: "/campaigns", icon: Calendar, label: "Campañas" }]
+      : []),
+    ...(isAdmin || isNurse || isCitizen
+      ? [{ path: "/outbreaks", icon: ShieldAlert, label: "Alertas Sanitarias" }]
+      : []),
+    ...(isAdmin ? [{ path: "/users", icon: Users, label: "Usuarios" }] : []),
+    ...(isAdmin || isNurse || isCitizen
+      ? [{ path: "/health-centers", icon: Building, label: "Centros de Salud" }]
+      : []),
   ];
 
   const handleLogoutClick = () => {
@@ -85,7 +100,11 @@ export const DashboardLayout = () => {
             {user?.email?.split("@")[0]}
           </h3>
           <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mt-1">
-            {user?.role === "admin" ? "Administrador" : "Ciudadano"}
+            {isAdmin
+              ? "Administrador"
+              : isNurse
+                ? "Enfermera"
+                : "Paciente"}
           </p>
         </div>
 

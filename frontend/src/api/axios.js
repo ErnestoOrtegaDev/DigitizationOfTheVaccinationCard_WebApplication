@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/authStore';
 
 const instance = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1', 
-    withCredentials: true // Permite envío de cookies
+    withCredentials: true // Permite Denvío de cookies
 });
 
 // Interceptor de Respuestas: Escucha TODAS las respuestas del backend antes de que lleguen a tus componentes

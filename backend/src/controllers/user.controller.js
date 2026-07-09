@@ -28,6 +28,10 @@ export const createUserWithDefaultPassword = async (req, res) => {
             });
         }
 
+        const normalizedRole = (role || 'citizen').toLowerCase();
+        const roleAliases = { patient: 'citizen' };
+        const finalRole = roleAliases[normalizedRole] || (['admin', 'nurse', 'citizen'].includes(normalizedRole) ? normalizedRole : 'citizen');
+
         // Establecer contraseña por defecto si viene vacía
         const finalPassword = password || 'VacunApp2026';
         
@@ -39,7 +43,7 @@ export const createUserWithDefaultPassword = async (req, res) => {
         const newUser = await User.create({
             email,
             password_hash: passwordHash,
-            role
+            role: finalRole
         });
 
         return res.status(201).json({ 
@@ -84,7 +88,11 @@ export const updateUser = async (req, res) => {
 
         // Actualización parcial
         if (email) user.email = email;
-        if (role) user.role = role;
+        if (role) {
+            const normalizedRole = role.toLowerCase();
+            const roleAliases = { patient: 'citizen' };
+            user.role = roleAliases[normalizedRole] || (['admin', 'nurse', 'citizen'].includes(normalizedRole) ? normalizedRole : 'citizen');
+        }
         
         if (password) {
             const salt = await bcrypt.genSalt(10);

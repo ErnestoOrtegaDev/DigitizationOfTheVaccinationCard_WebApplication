@@ -4,12 +4,17 @@ import { HealthCenterModal } from "../components/HealthCenterModal";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
 import { useHealthCenterStore } from "../store/healthCenterStore";
+import { useAuthStore } from "../store/authStore";
 
 export const HealthCentersPage = () => {
   const { centers, loading, fetchCenters } = useHealthCenterStore();
+  const currentUser = useAuthStore((state) => state.user);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const normalizedRole = (currentUser?.role || "citizen").toLowerCase();
+  const canManageCenters = normalizedRole === "admin";
 
   const handleEditClick = (id) => {
     fetch(`http://localhost:4000/api/v1/health-centers/${id}`, {
@@ -90,16 +95,18 @@ export const HealthCentersPage = () => {
             digital.
           </p>
         </div>
-        <button
-          onClick={() => {
-            setSelectedCenter(null);
-            setIsModalOpen(true);
-          }}
-          className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition-colors text-sm flex items-center gap-2"
-        >
-          <Plus size={18} />
-          <span>Nuevo Establecimiento</span>
-        </button>
+        {canManageCenters && (
+          <button
+            onClick={() => {
+              setSelectedCenter(null);
+              setIsModalOpen(true);
+            }}
+            className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition-colors text-sm flex items-center gap-2"
+          >
+            <Plus size={18} />
+            <span>Nuevo Establecimiento</span>
+          </button>
+        )}
       </div>
 
       {/* Buscador */}
@@ -164,22 +171,24 @@ export const HealthCentersPage = () => {
               </div>
 
               {/* Botones de acción al pie de la Card */}
-              <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  onClick={() => handleEditClick(center.id)}
-                  className="text-slate-500 hover:text-blue-900 hover:bg-white border border-transparent hover:border-slate-200 transition-all p-2 rounded-xl"
-                  title="Editar Información"
-                >
-                  <Pencil size={16} />
-                </button>
-                <button
-                  onClick={() => handleSoftDelete(center.id)}
-                  className="text-slate-500 hover:text-red-600 hover:bg-white border border-transparent hover:border-red-100 transition-all p-2 rounded-xl"
-                  title="Inactivar Establecimiento"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+              {canManageCenters && (
+                <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => handleEditClick(center.id)}
+                    className="text-slate-500 hover:text-blue-900 hover:bg-white border border-transparent hover:border-slate-200 transition-all p-2 rounded-xl"
+                    title="Editar Información"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleSoftDelete(center.id)}
+                    className="text-slate-500 hover:text-red-600 hover:bg-white border border-transparent hover:border-red-100 transition-all p-2 rounded-xl"
+                    title="Inactivar Establecimiento"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

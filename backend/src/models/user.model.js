@@ -21,8 +21,14 @@ const User = sequelize.define('User', {
         allowNull: false
     },
     role: {
-        type: DataTypes.ENUM('admin', 'nurse', 'citizen'),
-        allowNull: false
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            isIn: {
+                args: [['admin', 'nurse', 'citizen', 'patient']],
+                msg: 'El rol debe ser admin, nurse, citizen o patient'
+            }
+        }
     },
     refresh_token: {
         type: DataTypes.STRING
