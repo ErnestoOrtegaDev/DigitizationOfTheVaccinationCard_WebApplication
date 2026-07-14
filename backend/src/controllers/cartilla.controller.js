@@ -29,7 +29,6 @@ export const getPatientCartilla = async (req, res) => {
             });
         }
 
-        console.log('[Cartilla] Paciente encontrado:', patient.full_name);
 
         // Calcular la edad exacta en meses
         const birthDate = new Date(patient.birth_date);
@@ -38,8 +37,6 @@ export const getPatientCartilla = async (req, res) => {
 
         // Asegurar que la edad es al menos 0 (para recién nacidos o si la fecha es inválida)
         ageInMonths = Math.max(0, ageInMonths);
-
-        console.log('[Cartilla] Edad calculada:', ageInMonths, 'meses');
 
         // Buscar el tipo de cartilla correspondiente según el rango de edad en meses
         const matchingCartilla = await CartillaType.findOne({
@@ -56,10 +53,6 @@ export const getPatientCartilla = async (req, res) => {
                 message: 'No se encontró un esquema de vacunación oficial para la edad actual del paciente.'
             });
         }
-
-        console.log('[Cartilla] Cartilla encontrada: ID =', matchingCartilla.id, ', Nombre =', matchingCartilla.name);
-
-        console.log('[Cartilla] Buscando registros para patient_id:', decodedPatientId);
 
         // Verificar si el paciente ya cuenta con un historial de vacunas generado
         let records = await VaccinationRecord.findAll({
@@ -78,7 +71,6 @@ export const getPatientCartilla = async (req, res) => {
             ]
         });
 
-        console.log('[Cartilla] Registros encontrados:', records.length);
 
         // Si no existen registros, inicializamos automáticamente la cartilla oficial
         if (records.length === 0) {
@@ -86,7 +78,6 @@ export const getPatientCartilla = async (req, res) => {
                 where: { cartilla_type_id: matchingCartilla.id }
             });
 
-            console.log('[Cartilla] SchemeDoses encontradas:', officialDoses.length, 'para cartilla_type_id:', matchingCartilla.id);
 
             if (officialDoses.length > 0) {
                 const initialRecords = officialDoses.map(dose => ({

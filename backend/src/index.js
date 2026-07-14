@@ -22,6 +22,8 @@ import userRoutes from "./routes/users.routes.js";
 import vaccineRoutes from "./routes/vaccine.routes.js";
 import healthCenterRoutes from "./routes/healthCenter.routes.js";
 import cartillaRoutes from "./routes/cartilla.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
+import searchRoutes from "./routes/search.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -61,7 +63,8 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/vaccines", vaccineRoutes);
 app.use("/api/v1/health-centers", healthCenterRoutes);
 app.use("/api/v1/cartillas", cartillaRoutes);
-
+app.use("/api/v1/dashboard", dashboardRoutes);
+app.use("/api/v1/search", searchRoutes);
 app.get("/api/v1/health", async (req, res) => {
   try {
     // Uso de Sequelize para la consulta cruda de prueba

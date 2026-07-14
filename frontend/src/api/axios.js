@@ -4,22 +4,31 @@ import { useAuthStore } from '../store/authStore';
 
 const instance = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1', 
-    withCredentials: true // Permite Denvío de cookies
+    withCredentials: true // Permite envío de cookies (ej. Refresh Token en HttpOnly)
 });
 
-// Interceptor de Respuestas: Escucha TODAS las respuestas del backend antes de que lleguen a tus componentes
-instance.interceptors.response.use(
-    (response) => {
-        // Si todo sale bien, dejamos pasar la respuesta normal
-        return response;
+// NUEVO INTERCEPTOR DE PETICIÓN (Inyecta el token en cada llamada)
+instance.interceptors.request.use(
+    (config) => {
+        // Obtenemos el estado actual de la tienda sin usar hooks
+        const { token } = useAuthStore.getState();
+        
+        // Si hay un token, lo mandamos en las cabeceras de autorización
+        if (token && !config.headers.Authorization) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
     },
+    (error) => Promise.reject(error)
+);
+
+// INTERCEPTOR DE RESPUESTAS 
+instance.interceptors.response.use(
+    (response) => response,
     (error) => {
-        // Si el backend nos responde con un error
         if (error.response && error.response.status === 401) {
-            // Revisamos si el usuario creía estar logueado
             const { isAuthenticated, logout } = useAuthStore.getState();
             
-            // Si el backend dice "No autorizado" y el Frontend dice "Estoy logueado", significa que la sesión expiró
             if (isAuthenticated) {
                 Swal.fire({
                     icon: 'warning',
@@ -28,12 +37,10 @@ instance.interceptors.response.use(
                     confirmButtonColor: '#2563eb',
                     allowOutsideClick: false
                 }).then(() => {
-                    logout(); // Borra el estado y el Guardia automáticamente lo mandará a /login
+                    logout(); 
                 });
             }
         }
-        
-        // Devolvemos el error para que el componente también lo atrape si lo necesita
         return Promise.reject(error);
     }
 );
