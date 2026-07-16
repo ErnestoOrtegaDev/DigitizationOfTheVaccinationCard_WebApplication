@@ -14,6 +14,7 @@ import { UsersPage } from "./pages/User.jsx";
 import { HealthCentersPage } from "./pages/HealthCentersPage";
 import { VaccinesPage } from "./pages/VaccinesPage.jsx";
 import { CartillaPage } from "./pages/CartillaPage.jsx";
+import { Campaigns } from "./pages/Campaigns";
  
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -45,6 +46,7 @@ function App() {
               <Route path="/vaccines" element={<VaccinesPage />} />
             </Route>
             <Route path="/cartilla/:patientId" element={<CartillaPage />} />
+            <Route path="/campaigns" element={<Campaigns />} />
             {/* Futuras rutas privadas irán aquí */}
           </Route>
         </Route>
