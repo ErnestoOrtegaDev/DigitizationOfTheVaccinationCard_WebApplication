@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Users, UserPlus, Search, Pencil, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
-import axios from "../api/axios.js"; 
+import axios from "../api/axios.js";
 import { useAuthStore } from "../store/authStore.js";
 
 export const UsersPage = () => {
@@ -27,7 +27,7 @@ export const UsersPage = () => {
     }
   };
 
- // Crear nuevo usuario 
+  // Crear nuevo usuario
   const handleCreateUser = async () => {
     Swal.fire({
       title: "Crear Nuevo Usuario",
@@ -62,25 +62,28 @@ export const UsersPage = () => {
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-          Swal.showValidationMessage("¡Por favor ingresa un formato de correo válido (ejemplo@dominio.com)!");
+          Swal.showValidationMessage(
+            "¡Por favor ingresa un formato de correo válido (ejemplo@dominio.com)!",
+          );
           return false;
         }
 
         return { email, role };
-      }
+      },
     }).then(async (result) => {
       if (result.isConfirmed && result.value) {
         try {
           const { email, role } = result.value;
 
           // Guardamos la respuesta que envía el servidor
-          const response = await axios.post("/users", { 
+          const response = await axios.post("/users", {
             email,
-            role
+            role,
           });
 
           // Extraemos la contraseña temporal que viene del backend
-          const passwordCreada = response.data.defaultPassword || "VacunApp2026";
+          const passwordCreada =
+            response.data.defaultPassword || "VacunApp2026";
 
           // Mostramos una alerta de éxito con los accesos limpios para copiar
           Swal.fire({
@@ -97,7 +100,7 @@ export const UsersPage = () => {
             `,
             icon: "success",
             confirmButtonColor: "#1e3a8a",
-            customClass: { popup: "rounded-2xl" }
+            customClass: { popup: "rounded-2xl" },
           });
 
           fetchUsers();
@@ -138,12 +141,14 @@ export const UsersPage = () => {
       customClass: { popup: "rounded-2xl" },
       preConfirm: () => {
         return document.getElementById("swal-input-role").value;
-      }
+      },
     }).then(async (result) => {
       if (result.isConfirmed && result.value) {
         try {
           const selectedRole = result.value;
-          const response = await axios.put(`/users/${user.id}`, { role: selectedRole });
+          const response = await axios.put(`/users/${user.id}`, {
+            role: selectedRole,
+          });
 
           if (response.data.status === "success" || response.status === 200) {
             toast.success("Rol de usuario actualizado con éxito.");
@@ -156,7 +161,7 @@ export const UsersPage = () => {
       }
     });
   };
-  
+
   // Eliminar lógicamente un usuario
   const handleSoftDelete = (id) => {
     Swal.fire({
@@ -187,9 +192,10 @@ export const UsersPage = () => {
 
   const filteredUsers = users.filter((user) => {
     const term = searchTerm.toLowerCase();
+    const name = user.name ? user.name.toLowerCase() : "";
     const email = user.email ? user.email.toLowerCase() : "";
     const role = user.role ? user.role.toLowerCase() : "";
-    return email.includes(term) || role.includes(term);
+    return name.includes(term) || email.includes(term) || role.includes(term);
   });
 
   useEffect(() => {
@@ -206,7 +212,8 @@ export const UsersPage = () => {
             Control de Usuarios del Sistema
           </h1>
           <p className="text-slate-500 mt-1">
-            Visualiza, añade y gestiona los roles y accesos globales de VacunApp MX.
+            Visualiza, añade y gestiona los roles y accesos globales de VacunApp
+            MX.
           </p>
         </div>
         <button
@@ -252,7 +259,8 @@ export const UsersPage = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-bold text-xs uppercase tracking-wider">
-                  <th className="p-4 pl-6">ID Cuenta</th>
+                  {/* Cambiado de ID Cuenta a Nombre Completo */}
+                  <th className="p-4 pl-6">Nombre Completo</th>
                   <th className="p-4">Correo Electrónico</th>
                   <th className="p-4 text-center">Rol de Accesos</th>
                   <th className="p-4 text-center">Estatus</th>
@@ -261,25 +269,39 @@ export const UsersPage = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="p-4 pl-6 font-mono text-xs text-slate-400">
-                      #{user.id}
+                  <tr
+                    key={user.id}
+                    className="hover:bg-slate-50/80 transition-colors"
+                  >
+                    {/* Reemplazado el ID en mono por el Nombre con estilo destacado */}
+                    <td className="p-4 pl-6 font-semibold text-slate-800">
+                      {user.name || "Sin registrar"}
                     </td>
-                    <td className="p-4 font-semibold text-slate-800">
-                      {user.email}
-                    </td>
+                    <td className="p-4 text-slate-600">{user.email}</td>
                     <td className="p-4 text-center">
-                      <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${
-                        user.role === "admin"
-                          ? "bg-purple-50 text-purple-700 border border-purple-100"
-                          : "bg-blue-50 text-blue-700 border border-blue-100"
-                      }`}>
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${
+                          user.role === "admin"
+                            ? "bg-purple-50 text-purple-700 border border-purple-100"
+                            : "bg-blue-50 text-blue-700 border border-blue-100"
+                        }`}
+                      >
                         {user.role}
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      <span className="bg-green-600 px-3 py-1 rounded-full text-white text-xs font-bold tracking-wide uppercase shadow-sm">
-                        {user.status || "active"}
+                      {/* Estatus adaptado a español e indicador dinámico de color */}
+                      <span
+                        className={`px-3 py-1 rounded-full text-white text-xs font-bold tracking-wide uppercase shadow-sm ${
+                          user.status === "inactive" ||
+                          user.status === "inactivo"
+                            ? "bg-slate-400"
+                            : "bg-green-600"
+                        }`}
+                      >
+                        {user.status === "active" || !user.status
+                          ? "Activo"
+                          : "Inactivo"}
                       </span>
                     </td>
                     <td className="p-4 text-center pr-6">

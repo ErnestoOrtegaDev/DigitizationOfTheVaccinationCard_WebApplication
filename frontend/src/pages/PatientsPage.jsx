@@ -21,8 +21,12 @@ export const PatientsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const currentUser = useAuthStore((state) => state.user);
   const normalizedRole = (currentUser?.role || "citizen").toLowerCase();
-  const canCreatePatients = normalizedRole === "admin" || normalizedRole === "nurse" || normalizedRole === "citizen";
-  const canEditOrDeletePatients = normalizedRole === "admin" || normalizedRole === "nurse";
+  const canCreatePatients =
+    normalizedRole === "admin" ||
+    normalizedRole === "nurse" ||
+    normalizedRole === "citizen";
+  const canEditOrDeletePatients =
+    normalizedRole === "admin" || normalizedRole === "nurse";
 
   const handleEditClick = (id) => {
     fetch(`http://localhost:4000/api/v1/patients/${id}`, {
@@ -189,8 +193,19 @@ export const PatientsPage = () => {
                       {patient.birth_date}
                     </td>
                     <td className="p-4 text-center">
-                      <span className="bg-green-600 px-3 py-1 rounded-full text-white text-xs font-bold tracking-wide uppercase shadow-sm">
-                        {patient.status}
+                      <span
+                        className={`px-3 py-1 rounded-full text-white text-xs font-bold tracking-wide uppercase shadow-sm ${
+                          patient.status === "inactive" ||
+                          patient.status === "inactivo"
+                            ? "bg-slate-400"
+                            : "bg-green-600"
+                        }`}
+                      >
+                        {patient.status === "active" ||
+                        patient.status === "ACTIVE" ||
+                        !patient.status
+                          ? "Activo"
+                          : "Inactivo"}
                       </span>
                     </td>
                     <td className="p-4 text-center pr-6">
