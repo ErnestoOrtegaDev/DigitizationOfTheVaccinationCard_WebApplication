@@ -3,9 +3,12 @@ import axios from '../api/axios';
 
 export const useAuthStore = create((set, get) => ({
     user: null,
+    token: null,
     isAuthenticated: false,
     isLoading: false,
-    isChecking: true, // Para cuando verificamos la cookie al recargar la página
+    isChecking: true,
+
+    setToken: (token) => set({ token }),
 
     // Acción: Iniciar sesión (recibe los datos del backend)
     login: (userData) => {

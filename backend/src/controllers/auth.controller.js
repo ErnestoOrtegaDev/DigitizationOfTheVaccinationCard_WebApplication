@@ -121,7 +121,6 @@ export const login = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('[Auth Controller] Error en login:', error);
         res.status(500).json({ status: 'error', message: 'Falla interna del servidor' });
     }
 };
@@ -166,5 +165,32 @@ export const logout = async (req, res) => {
     } catch (error) {
         console.error('[Auth Controller] Error en logout:', error);
         res.status(500).json({ status: 'error', message: 'Falla interna del servidor al cerrar sesión' });
+    }
+};
+
+export const refreshToken = async (req, res) => {
+    const refreshToken = req.cookies.jwt_refresh; // Asegúrate que el nombre coincida con tu login
+    if (!refreshToken) return res.status(401).json({ message: 'No token' });
+
+    try {
+        const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
+        
+        // Generar nuevo Access Token (15 min)
+        const newAccessToken = jwt.sign(
+            { id: decoded.id, role: decoded.role }, 
+            ACCESS_TOKEN_SECRET, 
+            { expiresIn: '15m' }
+        );
+
+        res.cookie('jwt_access', newAccessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 15 * 60 * 1000
+        });
+
+        return res.status(200).json({ accessToken: newAccessToken });
+    } catch (error) {
+        return res.status(403).json({ message: 'Refresh fallido' });
     }
 };

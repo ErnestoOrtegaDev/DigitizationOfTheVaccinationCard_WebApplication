@@ -28,7 +28,10 @@ export const Login = () => {
                 password: formData.password
             });
 
-            login(response.data.user);
+            login({
+                ...response.data.user,
+                accessToken: response.data.accessToken
+            });
 
             Swal.fire({
                 icon: 'success',

@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, logout } from "../controllers/auth.controller.js";
+import { register, login, logout, refreshToken } from "../controllers/auth.controller.js";
 import { verifyToken, requireRole } from "../middlewares/auth.middleware.js";
 import { encodeId } from "../utils/hashids.js";
 
@@ -109,5 +109,7 @@ router.get("/me", verifyToken, (req, res) => {
     },
   });
 });
+
+router.post("/refresh", refreshToken);
 
 export default router;

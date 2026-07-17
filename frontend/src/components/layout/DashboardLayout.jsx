@@ -42,7 +42,6 @@ export const DashboardLayout = () => {
     { path: "/patients", icon: Users, label: "Pacientes" },
     ...(isAdmin || isNurse ? [{ path: "/vaccines", icon: Syringe, label: "Vacunas" }] : []),
     ...(isAdmin || isNurse || isCitizen ? [{ path: "/campaigns", icon: Calendar, label: "Campañas" }] : []),
-    ...(isAdmin || isNurse || isCitizen ? [{ path: "/outbreaks", icon: ShieldAlert, label: "Alertas Sanitarias" }] : []),
     ...(isAdmin ? [{ path: "/users", icon: Users, label: "Usuarios" }] : []),
     ...(isAdmin || isNurse || isCitizen ? [{ path: "/health-centers", icon: Building, label: "Centros de Salud" }] : []),
   ];
@@ -252,7 +251,7 @@ export const DashboardLayout = () => {
             <div className="max-h-80 overflow-y-auto p-2">
               {searchQuery.trim().length < 2 ? (
                 <div className="py-8 text-center text-slate-400">
-                  <p className="text-sm font-medium">Escribe al menos 2 letras para buscar en la base de datos.</p>
+                  <p className="text-sm font-medium">Escribe al menos 2 letras para buscar.</p>
                 </div>
               ) : searchResults.length > 0 ? (
                 <ul className="space-y-1">

@@ -18,12 +18,15 @@ import { Campaigns } from "./pages/Campaigns";
  
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
+  const isChecking = useAuthStore((state) => state.isChecking);
 
-  // Se ejecuta una sola vez al cargar la app para validar si hay una cookie de sesión activa
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
+  if (isChecking) {
+    return <div className="flex h-screen items-center justify-center">Cargando...</div>;
+  }
   return (
     <BrowserRouter>
       <Routes>

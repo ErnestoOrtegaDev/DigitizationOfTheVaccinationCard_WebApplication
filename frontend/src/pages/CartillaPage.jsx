@@ -10,7 +10,6 @@ export const CartillaPage = () => {
 
     useEffect(() => {
         if (patientId) {
-            console.log('Cargando cartilla para paciente:', patientId);
             fetchPatientCartilla(patientId);
         }
     }, [patientId]);
