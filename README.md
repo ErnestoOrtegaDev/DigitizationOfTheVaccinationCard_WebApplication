@@ -33,7 +33,7 @@ El proyecto está dividido en dos aplicaciones principales y gestionado a travé
 
 3.  **Levantar los contenedores:**
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
     Este comando levantará la base de datos MySQL, el servidor Backend en el puerto 4000 y el Frontend en el puerto especificado por Vite.
 
