@@ -16,7 +16,7 @@ import {
   X,
   User,       
   ArrowRight,
-  Loader2     // Agregamos el loader de Lucide
+  Loader2     
 } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -85,14 +85,14 @@ export const DashboardLayout = () => {
           }));
         }
 
-        // 3. Juntamos módulos + datos de MySQL
+        // Juntamos módulos + datos de MySQL
         setSearchResults([...matchedModules, ...dynamicData]);
       } catch (error) {
         console.error("Error al buscar:", error);
       } finally {
         setIsSearching(false);
       }
-    }, 300); // 300 milisegundos de retraso (Debounce)
+    }, 300); 
 
     return () => clearTimeout(delayDebounceFn); // Limpiamos el timer si el usuario sigue tecleando
   }, [searchQuery]);
